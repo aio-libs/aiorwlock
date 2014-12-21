@@ -1,0 +1,16 @@
+language: python
+
+python:
+    - 3.3
+    - 3.4
+env:
+    - PYTHONASYNCIODEBUG=1
+    - PYTHONASYNCIODEBUG=0
+
+install:
+    - pip install flake8
+    - pip install nose
+    - pip install .
+
+script:
+  - make test
