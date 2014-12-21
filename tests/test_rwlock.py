@@ -21,8 +21,8 @@ def run_until_complete(fun):
 
 
 class Bunch(object):
-    """A bunch of Tasks.
-    """
+    """A bunch of Tasks. Port python threading tests"""
+
     def __init__(self, f, n, wait_before_exit=False, loop=None):
         """
         Construct a bunch of `n` threads running the same function `f`.

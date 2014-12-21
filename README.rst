@@ -10,9 +10,21 @@ locks, one for read-only operations and one for writing. The read lock may be
 held simultaneously by multiple reader tasks, so long as there are
 no writers. The write lock is exclusive.
 
+Whether or not a read-write lock will improve performance over the use of
+a mutual exclusion lock depends on the frequency that the data is *read*
+compared to being *modified*. For example, a collection that is initially
+populated with data and thereafter infrequently modified, while being
+frequently searched is an ideal candidate for the use of a read-write lock.
+However, if updates become frequent then the data spends most of its time
+being exclusively locked and there is little, if any increase in concurrency.
+
+
+Implementation almost direct port from this patch_.
+
 You have to use ``try/finally`` pattern, it is not possible to build
 context manager for this lock since, ``yield from`` is necessary for
 ``release()`` method.
+
 
 
 Example
@@ -40,3 +52,4 @@ Example
 
 
 .. _asyncio: http://docs.python.org/3.4/library/asyncio.html
+.. _patch: http://bugs.python.org/issue8800
