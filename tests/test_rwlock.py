@@ -115,6 +115,12 @@ class TestRWLockReader(unittest.TestCase):
         self.assertTrue('WriterLock: [unlocked]' in rwlock.__repr__())
 
     @run_until_complete
+    def test_release_unlocked(self):
+        rwlock = RWLock(loop=self.loop)
+        with self.assertRaises(RuntimeError):
+            yield from rwlock.reader_lock.release()
+
+    @run_until_complete
     def test_many_readers(self):
         rwlock = RWLock(loop=self.loop)
         N = 5
@@ -287,7 +293,7 @@ class TestRWLockReader(unittest.TestCase):
 
     @run_until_complete
     def test_writer_success(self):
-        """Verify that a writer can get access"""
+        # Verify that a writer can get access
         rwlock = RWLock(loop=self.loop)
         N = 5
         reads = 0
