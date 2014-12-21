@@ -1,7 +1,9 @@
 import asyncio
 from functools import wraps
+
 import unittest
 from unittest import mock
+
 from aiorwlock import RWLock
 
 
@@ -94,6 +96,25 @@ class TestRWLockReader(unittest.TestCase):
         self.assertIs(rwlock.lock._loop, self.loop)
 
     @run_until_complete
+    def test_repr(self):
+        rwlock = RWLock(loop=self.loop)
+        self.assertTrue('RWLock' in rwlock.__repr__())
+        self.assertTrue('WriterLock: [unlocked' in rwlock.__repr__())
+        self.assertTrue('ReaderLock: [unlocked' in rwlock.__repr__())
+
+        # reader lock __repr__
+        yield from rwlock.reader_lock.acquire()
+        self.assertTrue('ReaderLock: [locked]' in rwlock.__repr__())
+        yield from rwlock.reader_lock.release()
+        self.assertTrue('ReaderLock: [unlocked]' in rwlock.__repr__())
+
+        # writer lock __repr__
+        yield from rwlock.writer_lock.acquire()
+        self.assertTrue('WriterLock: [locked]' in rwlock.__repr__())
+        yield from rwlock.writer_lock.release()
+        self.assertTrue('WriterLock: [unlocked]' in rwlock.__repr__())
+
+    @run_until_complete
     def test_many_readers(self):
         rwlock = RWLock(loop=self.loop)
         N = 5
@@ -164,6 +185,32 @@ class TestRWLockReader(unittest.TestCase):
                     yield from rwlock.reader_lock.release()
             finally:
                 yield from rwlock.reader_lock.release()
+
+        yield from Bunch(f, N, loop=self.loop).wait_for_finished()
+        self.assertEqual(max(nlocked), 1)
+
+    @run_until_complete
+    def test_writer_then_reader_recursion(self):
+        rwlock = RWLock(loop=self.loop)
+        N = 5
+        locked = []
+        nlocked = []
+
+        @asyncio.coroutine
+        def f():
+            try:
+                yield from rwlock.writer_lock.acquire()
+                try:
+                    yield from rwlock.reader_lock.acquire()
+                    locked.append(1)
+                    yield from _wait(loop=self.loop)
+                    nlocked.append(len(locked))
+                    yield from _wait(loop=self.loop)
+                    locked.pop(-1)
+                finally:
+                    yield from rwlock.reader_lock.release()
+            finally:
+                yield from rwlock.writer_lock.release()
 
         yield from Bunch(f, N, loop=self.loop).wait_for_finished()
         self.assertEqual(max(nlocked), 1)
