@@ -12,7 +12,7 @@ test: flake
 vtest:
 	nosetests -s -v $(FLAGS) ./tests/
 
-cov cover coverage:
+cov cover coverage: flake
 	nosetests -s -v --with-cover --cover-html --cover-branches $(FLAGS) --cover-package aiorwlock ./tests/
 	@echo "open file://`pwd`/cover/index.html"
 
