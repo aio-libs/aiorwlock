@@ -40,10 +40,11 @@ Example
     @asyncio.coroutine
     def go():
         rwlock = aiorwlock.RWLock(loop=loop)
+        yield from rwlock.writer_lock.acquire()
+        # or same way you can acquire reader lock
+        # yield from rwlock.reader_lock.acquire()
         try:
-            yield from rwlock.writer_lock.acquire()
-            # or same way you can acquire reader lock
-            # yield from rwlock.reader_lock.acquire()
+            print("inside writer_lock")
             yield from asyncio.sleep(0.1, loop=loop)
         finally:
             yield from rwlock.writer_lock.release()

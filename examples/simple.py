@@ -8,10 +8,10 @@ loop = asyncio.get_event_loop()
 @asyncio.coroutine
 def go():
     rwlock = aiorwlock.RWLock(loop=loop)
-    # aquire reader lock
-    try:
-        yield from rwlock.reader_lock.acquire()
 
+    # aquire reader lock
+    yield from rwlock.reader_lock.acquire()
+    try:
         print("inside reader lock")
 
         yield from asyncio.sleep(0.1, loop=loop)
@@ -19,9 +19,8 @@ def go():
         yield from rwlock.reader_lock.release()
 
     # acquire writer lock
+    yield from rwlock.writer_lock.acquire()
     try:
-        yield from rwlock.writer_lock.acquire()
-
         print("inside writer lock")
 
         yield from asyncio.sleep(0.1, loop=loop)

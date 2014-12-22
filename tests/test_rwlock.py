@@ -25,8 +25,8 @@ class Bunch(object):
 
     def __init__(self, f, n, wait_before_exit=False, loop=None):
         """
-        Construct a bunch of `n` threads running the same function `f`.
-        If `wait_before_exit` is True, the threads won't terminate until
+        Construct a bunch of `n` tasks running the same function `f`.
+        If `wait_before_exit` is True, the tasks won't terminate until
         do_finish() is called.
         """
         self._loop = loop or asyncio.get_event_loop()
@@ -129,8 +129,8 @@ class TestRWLockReader(unittest.TestCase):
 
         @asyncio.coroutine
         def f():
+            yield from rwlock.reader_lock.acquire()
             try:
-                yield from rwlock.reader_lock.acquire()
                 locked.append(1)
                 yield from _wait(loop=self.loop)
                 nlocked.append(len(locked))
@@ -152,10 +152,10 @@ class TestRWLockReader(unittest.TestCase):
 
         @asyncio.coroutine
         def f():
+            yield from rwlock.reader_lock.acquire()
             try:
                 yield from rwlock.reader_lock.acquire()
                 try:
-                    yield from rwlock.reader_lock.acquire()
                     locked.append(1)
                     yield from _wait(loop=self.loop)
                     nlocked.append(len(locked))
@@ -178,10 +178,10 @@ class TestRWLockReader(unittest.TestCase):
 
         @asyncio.coroutine
         def f():
+            yield from rwlock.writer_lock.acquire()
             try:
                 yield from rwlock.writer_lock.acquire()
                 try:
-                    yield from rwlock.writer_lock.acquire()
                     locked.append(1)
                     yield from _wait(loop=self.loop)
                     nlocked.append(len(locked))
@@ -204,10 +204,10 @@ class TestRWLockReader(unittest.TestCase):
 
         @asyncio.coroutine
         def f():
+            yield from rwlock.writer_lock.acquire()
             try:
-                yield from rwlock.writer_lock.acquire()
+                yield from rwlock.reader_lock.acquire()
                 try:
-                    yield from rwlock.reader_lock.acquire()
                     locked.append(1)
                     yield from _wait(loop=self.loop)
                     nlocked.append(len(locked))
@@ -229,8 +229,8 @@ class TestRWLockReader(unittest.TestCase):
 
         @asyncio.coroutine
         def f():
+            yield from rwlock.reader_lock.acquire()
             try:
-                yield from rwlock.reader_lock.acquire()
                 with self.assertRaises(RuntimeError):
                     yield from rwlock.writer_lock.acquire()
                 locked.append(1)
@@ -250,8 +250,8 @@ class TestRWLockReader(unittest.TestCase):
 
         @asyncio.coroutine
         def r():
+            yield from rwlock.reader_lock.acquire()
             try:
-                yield from rwlock.reader_lock.acquire()
                 rlocked.append(1)
                 yield from _wait(loop=self.loop)
                 nlocked.append((len(rlocked), len(wlocked)))
@@ -262,8 +262,8 @@ class TestRWLockReader(unittest.TestCase):
 
         @asyncio.coroutine
         def w():
+            yield from rwlock.writer_lock.acquire()
             try:
-                yield from rwlock.writer_lock.acquire()
                 wlocked.append(1)
                 yield from _wait(loop=self.loop)
                 nlocked.append((len(rlocked), len(wlocked)))
@@ -304,8 +304,8 @@ class TestRWLockReader(unittest.TestCase):
             # read until we achive write successes
             nonlocal reads, writes
             while writes < 2:
+                yield from rwlock.reader_lock.acquire()
                 try:
-                    yield from rwlock.reader_lock.acquire()
                     # TODO: fix this, why there is no switch here?
                     yield from asyncio.sleep(0.0, loop=self.loop)
                     reads += 1
@@ -322,8 +322,8 @@ class TestRWLockReader(unittest.TestCase):
             for i in range(2):
                 yield from _wait(loop=self.loop)
 
+                yield from rwlock.writer_lock.acquire()
                 try:
-                    yield from rwlock.writer_lock.acquire()
                     writes += 1
                     # print("current writes", reads)
 
@@ -331,10 +331,7 @@ class TestRWLockReader(unittest.TestCase):
                     yield from rwlock.writer_lock.release()
 
         b1 = Bunch(r, N, loop=self.loop)
-        # yield from asyncio.sleep(0.0, loop=self.loop)
-
         b2 = Bunch(w, 1, loop=self.loop)
-        # yield from asyncio.sleep(0.0001, loop=self.loop)
 
         yield from b1.wait_for_finished()
         yield from b2.wait_for_finished()
