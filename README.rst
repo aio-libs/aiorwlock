@@ -21,11 +21,6 @@ being exclusively locked and there is little, if any increase in concurrency.
 
 Implementation almost direct port from this patch_.
 
-You have to use ``try/finally`` pattern, it is not possible to build
-context manager for this lock since, ``yield from`` is necessary for
-``release()`` method.
-
-
 
 Example
 -------
@@ -50,6 +45,26 @@ Example
             yield from rwlock.writer_lock.release()
 
     loop.run_until_complete(go())
+
+Note
+----
+
+You have to use ``try/finally`` pattern, it is not possible to build
+*context manager* for this lock since, ``yield from`` is necessary for
+``release()`` method.
+
+.. code:: python
+
+    yield from rwlock.writer_lock.acquire()
+    try:
+        yield from do_work()
+    finally:
+        yield from rwlock.writer_lock.release()
+
+License
+-------
+
+``aiorwlock`` is offered under the Apache 2 license.
 
 
 .. _asyncio: http://docs.python.org/3.4/library/asyncio.html
