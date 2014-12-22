@@ -83,20 +83,17 @@ class _RWLockCore:
 class _ReaderLock:
     def __init__(self, lock):
         self.lock = lock
-        self._locked = False
 
     @asyncio.coroutine
     def acquire(self):
         yield from self.lock.acquire_read()
-        self._locked = True
 
     @asyncio.coroutine
     def release(self):
         yield from self.lock.release()
-        self._locked = False
 
     def __repr__(self):
-        status = 'locked' if self._locked else 'unlocked'
+        status = 'locked' if self.lock._state > 0 else 'unlocked'
         return "<ReaderLock: [{}]>".format(status)
 
 
@@ -104,10 +101,9 @@ class _WriterLock(_ReaderLock):
     @asyncio.coroutine
     def acquire(self):
         yield from self.lock.acquire_write()
-        self._locked = True
 
     def __repr__(self):
-        status = 'locked' if self._locked else 'unlocked'
+        status = 'locked' if self.lock._state < 0 else 'unlocked'
         return "<WriterLock: [{}]>".format(status)
 
 
