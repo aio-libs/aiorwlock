@@ -19,8 +19,6 @@ else:
 def read(f):
     return open(os.path.join(os.path.dirname(__file__), f)).read().strip()
 
-extras_require = {'snappy': ['python-snappy>=0.5'], }
-
 
 def read_version():
     regexp = re.compile(r"^__version__\W*=\W*'([\d.abrc]+)'")
@@ -41,7 +39,6 @@ classifiers = [
     'Programming Language :: Python :: 3.3',
     'Programming Language :: Python :: 3.4',
     'Operating System :: OS Independent',
-    'Topic :: System :: Distributed Computing',
     'Development Status :: 2 - Pre-Alpha',
 ]
 
@@ -59,5 +56,4 @@ setup(name='aiorwlock',
       license='Apache 2',
       packages=find_packages(),
       install_requires=install_requires,
-      extras_require=extras_require,
       include_package_data = True)
