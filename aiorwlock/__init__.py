@@ -6,6 +6,7 @@ __all__ = ['RWLock']
 
 # The internal lock object managing the RWLock state.
 class _RWLockCore:
+
     def __init__(self, loop=None):
         self._loop = loop or asyncio.get_event_loop()
 
@@ -81,29 +82,38 @@ class _RWLockCore:
 
 # Lock objects to access the _RWLockCore in reader or writer mode
 class _ReaderLock:
+
     def __init__(self, lock):
-        self.lock = lock
+        self._lock = lock
 
     @asyncio.coroutine
     def acquire(self):
-        yield from self.lock.acquire_read()
+        yield from self._lock.acquire_read()
 
     @asyncio.coroutine
     def release(self):
-        yield from self.lock.release()
+        yield from self._lock.release()
 
     def __repr__(self):
-        status = 'locked' if self.lock._state > 0 else 'unlocked'
+        status = 'locked' if self._lock._state > 0 else 'unlocked'
         return "<ReaderLock: [{}]>".format(status)
 
 
-class _WriterLock(_ReaderLock):
+class _WriterLock:
+
+    def __init__(self, lock):
+        self._lock = lock
+
     @asyncio.coroutine
     def acquire(self):
-        yield from self.lock.acquire_write()
+        yield from self._lock.acquire_write()
+
+    @asyncio.coroutine
+    def release(self):
+        yield from self._lock.release()
 
     def __repr__(self):
-        status = 'locked' if self.lock._state < 0 else 'unlocked'
+        status = 'locked' if self._lock._state < 0 else 'unlocked'
         return "<WriterLock: [{}]>".format(status)
 
 
@@ -115,6 +125,7 @@ class RWLock:
     reader tasks, so long as there are no writers. The write lock is
     exclusive.
     """
+
     core = _RWLockCore
 
     def __init__(self, loop=None):

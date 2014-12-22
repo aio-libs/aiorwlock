@@ -85,15 +85,15 @@ class TestRWLockReader(unittest.TestCase):
     def test_ctor_loop(self):
         loop = mock.Mock()
         rwlock = self.get_reader_lock(loop=loop)
-        self.assertIs(rwlock.lock._loop, loop)
+        self.assertIs(rwlock._lock._loop, loop)
 
         rwlock = RWLock(loop=self.loop).reader_lock
-        self.assertIs(rwlock.lock._loop, self.loop)
+        self.assertIs(rwlock._lock._loop, self.loop)
 
     def test_ctor_noloop(self):
         asyncio.set_event_loop(self.loop)
         rwlock = self.get_reader_lock(loop=None)
-        self.assertIs(rwlock.lock._loop, self.loop)
+        self.assertIs(rwlock._lock._loop, self.loop)
 
     @run_until_complete
     def test_repr(self):
