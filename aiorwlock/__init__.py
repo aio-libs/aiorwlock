@@ -4,22 +4,25 @@ __version__ = '0.0.1'
 __all__ = ['RWLock']
 
 
+# implementation based on:
+# http://bugs.python.org/issue8800
+
 # The internal lock object managing the RWLock state.
 class _RWLockCore:
 
     def __init__(self, loop=None):
         self._loop = loop or asyncio.get_event_loop()
 
-        self._cond = asyncio.Condition(loop=self._loop)
+        self._condition = asyncio.Condition(loop=self._loop)
         self._state = 0  # positive is shared count, negative exclusive count
         self._waiting = 0
-        self._owning = []  # threads will be few, so a list is not inefficient
+        self._owning = []  # tasks will be few, so a list is not inefficient
 
     # Acquire the lock in read mode.
     @asyncio.coroutine
     def acquire_read(self):
-        with (yield from self._cond):
-            return (yield from self._cond.wait_for(self._acquire_read))
+        with (yield from self._condition):
+            return (yield from self._condition.wait_for(self._acquire_read))
 
     def _acquire_read(self):
         if self._state < 0:
@@ -40,14 +43,15 @@ class _RWLockCore:
             self._owning.append(me)
         return ok
 
-    # Acquire the lock in write mode.  A 'waiting' count is maintainded,
+    # Acquire the lock in write mode.  A 'waiting' count is maintain ed,
     # ensurring that 'readers' will yield to writers.
     @asyncio.coroutine
     def acquire_write(self):
-        with (yield from self._cond):
+        with (yield from self._condition):
             self._waiting += 1
             try:
-                return (yield from self._cond.wait_for(self._acquire_write))
+                return (yield from self._condition.wait_for(
+                    self._acquire_write))
             finally:
                 self._waiting -= 1
 
@@ -66,7 +70,7 @@ class _RWLockCore:
     # Release the lock
     @asyncio.coroutine
     def release(self):
-        with (yield from self._cond):
+        with (yield from self._condition):
             me = asyncio.Task.current_task(loop=self._loop)
             try:
                 self._owning.remove(me)
@@ -77,7 +81,7 @@ class _RWLockCore:
             else:
                 self._state += 1
             if self._state == 0:
-                self._cond.notify_all()
+                self._condition.notify_all()
 
 
 # Lock objects to access the _RWLockCore in reader or writer mode
@@ -119,11 +123,10 @@ class _WriterLock:
 
 class RWLock:
     # Doc shamelessly ripped off from Java
-    """
-    A RWLock maintains a pair of associated locks, one for read-only operations
-    and one for writing. The read lock may be held simultaneously by multiple
-    reader tasks, so long as there are no writers. The write lock is
-    exclusive.
+    """A RWLock maintains a pair of associated locks, one for read-only
+    operations and one for writing. The read lock may be held simultaneously
+    by multiple reader tasks, so long as there are no writers. The write
+    lock is exclusive.
     """
 
     core = _RWLockCore
@@ -136,19 +139,14 @@ class RWLock:
 
     @property
     def reader_lock(self):
-        """
-        The lock used for read, or shared, access
-        """
+        """The lock used for read, or shared, access"""
         return self._reader_lock
 
     @property
     def writer_lock(self):
-        """
-        The lock used for write, or exclusive, access
-        """
+        """The lock used for write, or exclusive, access"""
         return self._writer_lock
 
     def __repr__(self):
-        r = '<RWLock: {} {}>'.format(self.reader_lock.__repr__(),
-                                     self.writer_lock.__repr__())
-        return r
+        return '<RWLock: {} {}>'.format(self.reader_lock.__repr__(),
+                                        self.writer_lock.__repr__())

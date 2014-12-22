@@ -222,7 +222,7 @@ class TestRWLockReader(unittest.TestCase):
         self.assertEqual(max(nlocked), 1)
 
     @run_until_complete
-    def test_writer_recursionfail(self):
+    def test_writer_recursion_fail(self):
         rwlock = RWLock(loop=self.loop)
         N = 5
         locked = []
@@ -306,7 +306,6 @@ class TestRWLockReader(unittest.TestCase):
             while writes < 2:
                 yield from rwlock.reader_lock.acquire()
                 try:
-                    # TODO: fix this, why there is no switch here?
                     yield from asyncio.sleep(0.0, loop=self.loop)
                     reads += 1
                     # print("current reads", reads)

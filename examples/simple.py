@@ -9,7 +9,7 @@ loop = asyncio.get_event_loop()
 def go():
     rwlock = aiorwlock.RWLock(loop=loop)
 
-    # aquire reader lock
+    # acquire reader lock
     yield from rwlock.reader_lock.acquire()
     try:
         print("inside reader lock")
