@@ -41,7 +41,7 @@ class _ContextManager:
 # The internal lock object managing the RWLock state.
 class _RWLockCore:
 
-    def __init__(self, loop=None):
+    def __init__(self, loop):
         self._loop = loop or asyncio.get_event_loop()
 
         self._read_waiters = collections.deque()
@@ -218,9 +218,9 @@ class RWLock:
 
     core = _RWLockCore
 
-    def __init__(self, loop=None):
+    def __init__(self, *, loop=None):
         self._loop = loop or asyncio.get_event_loop()
-        core = self.core(loop=self._loop)
+        core = self.core(self._loop)
         self._reader_lock = _ReaderLock(core)
         self._writer_lock = _WriterLock(core)
 
