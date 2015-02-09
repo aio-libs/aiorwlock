@@ -105,20 +105,20 @@ class TestRWLockReader(unittest.TestCase):
         # reader lock __repr__
         yield from rwlock.reader_lock.acquire()
         self.assertTrue('ReaderLock: [locked]' in rwlock.__repr__())
-        yield from rwlock.reader_lock.release()
+        rwlock.reader_lock.release()
         self.assertTrue('ReaderLock: [unlocked]' in rwlock.__repr__())
 
         # writer lock __repr__
         yield from rwlock.writer_lock.acquire()
         self.assertTrue('WriterLock: [locked]' in rwlock.__repr__())
-        yield from rwlock.writer_lock.release()
+        rwlock.writer_lock.release()
         self.assertTrue('WriterLock: [unlocked]' in rwlock.__repr__())
 
     @run_until_complete
     def test_release_unlocked(self):
         rwlock = RWLock(loop=self.loop)
         with self.assertRaises(RuntimeError):
-            yield from rwlock.reader_lock.release()
+            rwlock.reader_lock.release()
 
     @run_until_complete
     def test_many_readers(self):
@@ -137,7 +137,7 @@ class TestRWLockReader(unittest.TestCase):
                 yield from _wait(loop=self.loop)
                 locked.pop(-1)
             finally:
-                yield from rwlock.writer_lock.release()
+                rwlock.writer_lock.release()
 
         yield from Bunch(f, N, loop=self.loop).wait_for_finished()
         self.assertTrue(max(nlocked) > 1)
@@ -162,9 +162,9 @@ class TestRWLockReader(unittest.TestCase):
                     yield from _wait(loop=self.loop)
                     locked.pop(-1)
                 finally:
-                    yield from rwlock.reader_lock.release()
+                    rwlock.reader_lock.release()
             finally:
-                yield from rwlock.reader_lock.release()
+                rwlock.reader_lock.release()
 
         yield from Bunch(f, N, loop=self.loop).wait_for_finished()
         self.assertTrue(max(nlocked) > 1)
@@ -188,9 +188,9 @@ class TestRWLockReader(unittest.TestCase):
                     yield from _wait(loop=self.loop)
                     locked.pop(-1)
                 finally:
-                    yield from rwlock.reader_lock.release()
+                    rwlock.reader_lock.release()
             finally:
-                yield from rwlock.reader_lock.release()
+                rwlock.reader_lock.release()
 
         yield from Bunch(f, N, loop=self.loop).wait_for_finished()
         self.assertEqual(max(nlocked), 1)
@@ -214,9 +214,9 @@ class TestRWLockReader(unittest.TestCase):
                     yield from _wait(loop=self.loop)
                     locked.pop(-1)
                 finally:
-                    yield from rwlock.reader_lock.release()
+                    rwlock.reader_lock.release()
             finally:
-                yield from rwlock.writer_lock.release()
+                rwlock.writer_lock.release()
 
         yield from Bunch(f, N, loop=self.loop).wait_for_finished()
         self.assertEqual(max(nlocked), 1)
@@ -235,7 +235,7 @@ class TestRWLockReader(unittest.TestCase):
                     yield from rwlock.writer_lock.acquire()
                 locked.append(1)
             finally:
-                yield from rwlock.reader_lock.release()
+                rwlock.reader_lock.release()
 
         yield from Bunch(f, N, loop=self.loop).wait_for_finished()
         self.assertEqual(len(locked), N)
@@ -258,7 +258,7 @@ class TestRWLockReader(unittest.TestCase):
                 yield from _wait(loop=self.loop)
                 rlocked.pop(-1)
             finally:
-                yield from rwlock.reader_lock.release()
+                rwlock.reader_lock.release()
 
         @asyncio.coroutine
         def w():
@@ -270,7 +270,7 @@ class TestRWLockReader(unittest.TestCase):
                 yield from _wait(loop=self.loop)
                 wlocked.pop(-1)
             finally:
-                yield from rwlock.writer_lock.release()
+                rwlock.writer_lock.release()
 
         b1 = Bunch(r, N, loop=self.loop)
         b2 = Bunch(w, N, loop=self.loop)
@@ -304,13 +304,13 @@ class TestRWLockReader(unittest.TestCase):
             # read until we achive write successes
             nonlocal reads, writes
             while writes < 2:
+                # print("current pre-reads", reads)
                 yield from rwlock.reader_lock.acquire()
                 try:
-                    yield from asyncio.sleep(0.0, loop=self.loop)
                     reads += 1
                     # print("current reads", reads)
                 finally:
-                    yield from rwlock.reader_lock.release()
+                    rwlock.reader_lock.release()
 
         @asyncio.coroutine
         def w():
@@ -321,13 +321,13 @@ class TestRWLockReader(unittest.TestCase):
             for i in range(2):
                 yield from _wait(loop=self.loop)
 
+                # print("current pre-writes", reads)
                 yield from rwlock.writer_lock.acquire()
                 try:
                     writes += 1
                     # print("current writes", reads)
-
                 finally:
-                    yield from rwlock.writer_lock.release()
+                    rwlock.writer_lock.release()
 
         b1 = Bunch(r, N, loop=self.loop)
         b2 = Bunch(w, 1, loop=self.loop)
