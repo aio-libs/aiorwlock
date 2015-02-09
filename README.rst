@@ -35,31 +35,13 @@ Example
     @asyncio.coroutine
     def go():
         rwlock = aiorwlock.RWLock(loop=loop)
-        yield from rwlock.writer_lock.acquire()
-        # or same way you can acquire reader lock
-        # yield from rwlock.reader_lock.acquire()
-        try:
+        with (yield from rwlock.writer_lock.acquire()):
+            # or same way you can acquire reader lock
+            # with (yield from rwlock.reader_lock.acquire()): pass
             print("inside writer_lock")
             yield from asyncio.sleep(0.1, loop=loop)
-        finally:
-            yield from rwlock.writer_lock.release()
 
     loop.run_until_complete(go())
-
-Note
-----
-
-You have to use ``try/finally`` pattern, it is not possible to build
-*context manager* for this lock since, ``yield from`` is necessary for
-``release()`` method.
-
-.. code:: python
-
-    yield from rwlock.writer_lock.acquire()
-    try:
-        yield from do_work()
-    finally:
-        yield from rwlock.writer_lock.release()
 
 License
 -------
