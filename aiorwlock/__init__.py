@@ -5,6 +5,36 @@ __version__ = '0.0.1'
 __all__ = ['RWLock']
 
 
+class _ContextManager:
+    """Context manager.
+
+    This enables the following idiom for acquiring and releasing a
+    lock around a block:
+
+        with (yield from lock):
+            <block>
+
+    while failing loudly when accidentally using:
+
+        with lock:
+            <block>
+    """
+
+    def __init__(self, lock):
+        self._lock = lock
+
+    def __enter__(self):
+        # We have no use for the "as ..."  clause in the with
+        # statement for locks.
+        return None
+
+    def __exit__(self, *args):
+        try:
+            self._lock.release()
+        finally:
+            self._lock = None  # Crudely prevent reuse.
+
+
 # implementation based on:
 # http://bugs.python.org/issue8800
 
@@ -110,6 +140,31 @@ class _ReaderLock:
         status = 'locked' if self._lock._state > 0 else 'unlocked'
         return "<ReaderLock: [{}]>".format(status)
 
+    def __enter__(self):
+        raise RuntimeError(
+            '"yield from" should be used as context manager expression')
+
+    def __exit__(self, *args):
+        # This must exist because __enter__ exists, even though that
+        # always raises; that's how the with-statement works.
+        pass  # pragma: no cover
+
+    def __iter__(self):
+        # This is not a coroutine.  It is meant to enable the idiom:
+        #
+        #     with (yield from lock):
+        #         <block>
+        #
+        # as an alternative to:
+        #
+        #     yield from lock.acquire()
+        #     try:
+        #         <block>
+        #     finally:
+        #         lock.release()
+        yield from self.acquire()
+        return _ContextManager(self)
+
 
 class _WriterLock:
 
@@ -126,6 +181,31 @@ class _WriterLock:
     def __repr__(self):
         status = 'locked' if self._lock._state < 0 else 'unlocked'
         return "<WriterLock: [{}]>".format(status)
+
+    def __enter__(self):
+        raise RuntimeError(
+            '"yield from" should be used as context manager expression')
+
+    def __exit__(self, *args):
+        # This must exist because __enter__ exists, even though that
+        # always raises; that's how the with-statement works.
+        pass  # pragma: no cover
+
+    def __iter__(self):
+        # This is not a coroutine.  It is meant to enable the idiom:
+        #
+        #     with (yield from lock):
+        #         <block>
+        #
+        # as an alternative to:
+        #
+        #     yield from lock.acquire()
+        #     try:
+        #         <block>
+        #     finally:
+        #         lock.release()
+        yield from self.acquire()
+        return _ContextManager(self)
 
 
 class RWLock:
