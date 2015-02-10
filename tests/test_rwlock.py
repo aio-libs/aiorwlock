@@ -339,6 +339,54 @@ class TestRWLockReader(unittest.TestCase):
         # print('>>>>>>>>>>>', writes, reads)
 
     @run_until_complete
+    def test_writer_success_fast(self):
+        # Verify that a writer can get access
+        rwlock = RWLock(loop=self.loop, fast=True)
+        N = 5
+        reads = 0
+        writes = 0
+
+        @asyncio.coroutine
+        def r():
+            # read until we achive write successes
+            nonlocal reads, writes
+            while writes < 2:
+                # print("current pre-reads", reads)
+                yield from rwlock.reader_lock.acquire()
+                try:
+                    reads += 1
+                    # print("current reads", reads)
+                    yield from asyncio.sleep(0, loop=self.loop)
+                finally:
+                    rwlock.reader_lock.release()
+
+        @asyncio.coroutine
+        def w():
+            nonlocal reads, writes
+            while reads == 0:
+                yield from _wait(loop=self.loop)
+
+            for i in range(2):
+                yield from _wait(loop=self.loop)
+
+                # print("current pre-writes", reads)
+                yield from rwlock.writer_lock.acquire()
+                try:
+                    writes += 1
+                    # print("current writes", reads)
+                finally:
+                    rwlock.writer_lock.release()
+
+        b1 = Bunch(r, N, loop=self.loop)
+        b2 = Bunch(w, 1, loop=self.loop)
+
+        yield from b1.wait_for_finished()
+        yield from b2.wait_for_finished()
+        self.assertEqual(writes, 2)
+        # uncomment this to view performance
+        # print('>>>>>>>>>>>', writes, reads)
+
+    @run_until_complete
     def test_writer_success_with_statement(self):
         # Verify that a writer can get access
         rwlock = RWLock(loop=self.loop)

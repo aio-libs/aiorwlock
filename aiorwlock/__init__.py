@@ -41,7 +41,8 @@ class _ContextManager:
 # The internal lock object managing the RWLock state.
 class _RWLockCore:
 
-    def __init__(self, loop):
+    def __init__(self, fast, loop):
+        self._do_yield = not fast
         self._loop = loop or asyncio.get_event_loop()
 
         self._read_waiters = collections.deque()
@@ -57,13 +58,15 @@ class _RWLockCore:
         if me in self._owning:
             self._state += 1
             self._owning.append(me)
-            yield from asyncio.sleep(0.0, loop=self._loop)
+            if self._do_yield:
+                yield from asyncio.sleep(0.0, loop=self._loop)
             return True
 
         if not self._write_waiters and self._state >= 0:
             self._state += 1
             self._owning.append(me)
-            yield from asyncio.sleep(0.0, loop=self._loop)
+            if self._do_yield:
+                yield from asyncio.sleep(0.0, loop=self._loop)
             return True
 
         fut = asyncio.Future(loop=self._loop)
@@ -87,13 +90,15 @@ class _RWLockCore:
                 raise RuntimeError("cannot upgrade RWLock from read to write")
             self._state -= 1
             self._owning.append(me)
-            yield from asyncio.sleep(0.0, loop=self._loop)
+            if self._do_yield:
+                yield from asyncio.sleep(0.0, loop=self._loop)
             return True
 
         if self._state == 0:
             self._state -= 1
             self._owning.append(me)
-            yield from asyncio.sleep(0.0, loop=self._loop)
+            if self._do_yield:
+                yield from asyncio.sleep(0.0, loop=self._loop)
             return True
 
         fut = asyncio.Future(loop=self._loop)
@@ -218,9 +223,9 @@ class RWLock:
 
     core = _RWLockCore
 
-    def __init__(self, *, loop=None):
+    def __init__(self, *, fast=False, loop=None):
         self._loop = loop or asyncio.get_event_loop()
-        core = self.core(self._loop)
+        core = self.core(fast, self._loop)
         self._reader_lock = _ReaderLock(core)
         self._writer_lock = _WriterLock(core)
 
