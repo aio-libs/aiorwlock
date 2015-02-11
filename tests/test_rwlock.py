@@ -437,3 +437,15 @@ class TestRWLockReader(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             with rwlock.writer_lock:
                 pass
+
+    def test_read_locked(self):
+        rwlock = RWLock(loop=self.loop)
+        self.assertFalse(rwlock.reader_lock.locked)
+        with (yield from self.reader_lock):
+            self.assertTrue(rwlock.reader_lock.locked)
+
+    def test_write_locked(self):
+        rwlock = RWLock(loop=self.loop)
+        self.assertFalse(rwlock.writer_lock.locked)
+        with (yield from self.writeer_lock):
+            self.assertTrue(rwlock.writer_lock.locked)

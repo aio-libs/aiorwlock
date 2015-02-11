@@ -50,6 +50,14 @@ class _RWLockCore:
         self._state = 0  # positive is shared count, negative exclusive count
         self._owning = []  # tasks will be few, so a list is not inefficient
 
+    @property
+    def read_locked(self):
+        return self._state > 0
+
+    @property
+    def write_locked(self):
+        return self._state < 0
+
     # Acquire the lock in read mode.
     @asyncio.coroutine
     def acquire_read(self):
@@ -134,6 +142,10 @@ class _ReaderLock:
     def __init__(self, lock):
         self._lock = lock
 
+    @property
+    def locked(self):
+        return self._lock.read_locked
+
     @asyncio.coroutine
     def acquire(self):
         yield from self._lock.acquire_read()
@@ -175,6 +187,10 @@ class _WriterLock:
 
     def __init__(self, lock):
         self._lock = lock
+
+    @property
+    def locked(self):
+        return self._lock.write_locked
 
     @asyncio.coroutine
     def acquire(self):
