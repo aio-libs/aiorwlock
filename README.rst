@@ -22,8 +22,32 @@ being exclusively locked and there is little, if any increase in concurrency.
 Implementation is almost direct port from this patch_.
 
 
-Example
--------
+Example with async def
+----------------------
+
+Requires Python 3.5+
+
+.. code:: python
+
+    import asyncio
+    import aiorwlock
+    loop = asyncio.get_event_loop()
+
+
+    async def go():
+        rwlock = aiorwlock.RWLock(loop=loop)
+        async with rwlock.writer_lock:
+            # or same way you can acquire reader lock
+            # async with rwlock.reader_lock: pass
+            print("inside writer_lock")
+            yield from asyncio.sleep(0.1, loop=loop)
+
+    loop.run_until_complete(go())
+
+Old-school way
+--------------
+
+Requires Python 3.3+
 
 .. code:: python
 
@@ -49,14 +73,15 @@ Fast path
 
 By default `RWLock` switches context on lock acquiring. That allows to
 other waiting tasks get the lock even if task that holds the lock
-doesn't contain context switches (`yield from fut` statements).
+doesn't contain context switches (`await fut` statements).
 
 The default behavior can be switched off by `fast` argument:
 `RWLock(fast=True)`.
 
-Long story short: lock is safe by default, but if you sure you have
-context switches (`yield from` statements) inside locked code you may
-want to use `fast=True` for minor speedup.
+Long story short:  lock is safe by  default, but if you  sure you have
+context switches (`await`,  `async with`, `async for`  or `yield from`
+statements) inside  locked code  you may want  to use  `fast=True` for
+minor speedup.
 
 
 License
