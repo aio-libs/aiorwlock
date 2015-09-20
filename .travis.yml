@@ -11,7 +11,7 @@ env:
 
 install:
     - pip install flake8
-    - pip install pytest
+    - pip install -U pytest
     - pip install pytest-cov
     - pip install .
     - pip install coveralls
