@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = aiorwlock, tests
+omit = site-packages, .tox
+
+[html]
+directory = coverage

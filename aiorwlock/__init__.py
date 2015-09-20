@@ -166,6 +166,24 @@ class _ContextManagerMixin:
         yield from self.acquire()
         return _ContextManager(self)
 
+    if PY_35:
+
+        def __await__(self):
+            # To make "with await lock" work.
+            yield from self.acquire()
+            return _ContextManager(self)
+
+        @asyncio.coroutine
+        def __aenter__(self):
+            yield from self.acquire()
+            # We have no use for the "as ..."  clause in the with
+            # statement for locks.
+            return None
+
+        @asyncio.coroutine
+        def __aexit__(self, exc_type, exc, tb):
+            self.release()
+
 
 # Lock objects to access the _RWLockCore in reader or writer mode
 class _ReaderLock(_ContextManagerMixin):

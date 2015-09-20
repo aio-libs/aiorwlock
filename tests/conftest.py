@@ -1,5 +1,6 @@
 import asyncio
 import pytest
+import sys
 
 
 @pytest.fixture
@@ -43,3 +44,9 @@ def pytest_runtest_setup(item):
     if 'run_loop' in item.keywords and 'loop' not in item.fixturenames:
         # inject an event loop fixture for all async tests
         item.fixturenames.append('loop')
+
+
+def pytest_ignore_collect(path, config):
+    if 'pep492' in str(path):
+        if sys.version_info < (3, 5, 0):
+            return True
