@@ -1,5 +1,5 @@
 -e .
 ipython
 ipdb
-coverage
 pytest
+pytest-cov

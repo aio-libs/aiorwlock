@@ -1,20 +1,18 @@
 # Some simple testing tasks (sorry, UNIX only).
 
-FLAGS=
-
 
 flake:
 	flake8 aiorwlock tests
 
 test: flake
-	nosetests -s $(FLAGS) ./tests/
+	py.test -s
 
 vtest:
-	nosetests -s -v $(FLAGS) ./tests/
+	py.test -v
 
 cov cover coverage: flake
-	nosetests -s -v --with-cover --cover-html --cover-branches $(FLAGS) --cover-package aiorwlock ./tests/
-	@echo "open file://`pwd`/cover/index.html"
+	py.test --cov=aiorwlock --cov=tests --cov-report=term --cov-report=html
+	@echo "open file://`pwd`/htmlcov/index.html"
 
 clean:
 	rm -rf `find . -name __pycache__`
