@@ -3,6 +3,7 @@ language: python
 python:
     - 3.3
     - 3.4
+    - 3.5
 env:
     - PYTHONASYNCIODEBUG=1
     - PYTHONASYNCIODEBUG=0
