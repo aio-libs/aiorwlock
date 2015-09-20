@@ -36,10 +36,10 @@ Requires Python 3.5+
 
     async def go():
         rwlock = aiorwlock.RWLock(loop=loop)
-        async with rwlock.writer_lock:
+        async with rwlock.writer:
             # or same way you can acquire reader lock
-            # async with rwlock.reader_lock: pass
-            print("inside writer_lock")
+            # async with rwlock.reader: pass
+            print("inside writer")
             yield from asyncio.sleep(0.1, loop=loop)
 
     loop.run_until_complete(go())
@@ -59,10 +59,10 @@ Requires Python 3.3+
     @asyncio.coroutine
     def go():
         rwlock = aiorwlock.RWLock(loop=loop)
-        with (yield from rwlock.writer_lock):
+        with (yield from rwlock.writer):
             # or same way you can acquire reader lock
-            # with (yield from rwlock.reader_lock): pass
-            print("inside writer_lock")
+            # with (yield from rwlock.reader): pass
+            print("inside writer")
             yield from asyncio.sleep(0.1, loop=loop)
 
     loop.run_until_complete(go())

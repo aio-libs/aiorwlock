@@ -2,7 +2,7 @@ import asyncio
 import collections
 import sys
 
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 __all__ = ['RWLock']
 
 PY_35 = sys.version_info >= (3, 5, 0)
@@ -245,14 +245,18 @@ class RWLock:
         self._writer_lock = _WriterLock(core)
 
     @property
-    def reader_lock(self):
+    def reader(self):
         """The lock used for read, or shared, access"""
         return self._reader_lock
 
+    reader_lock = reader
+
     @property
-    def writer_lock(self):
+    def writer(self):
         """The lock used for write, or exclusive, access"""
         return self._writer_lock
+
+    writer_lock = writer
 
     def __repr__(self):
         return '<RWLock: {} {}>'.format(self.reader_lock.__repr__(),
