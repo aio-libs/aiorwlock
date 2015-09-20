@@ -2,7 +2,7 @@
 
 
 flake:
-	flake8 aiorwlock tests
+	flake8 aiorwlock
 
 test: flake
 	py.test -s
