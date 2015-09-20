@@ -1,8 +1,11 @@
 import asyncio
 import collections
+import sys
 
 __version__ = '0.3.0'
 __all__ = ['RWLock']
+
+PY_35 = sys.version_info >= (3, 5, 0)
 
 
 class _ContextManager:
@@ -136,8 +139,36 @@ class _RWLockCore:
                 self._read_waiters[0].set_result(None)
 
 
+class _ContextManagerMixin:
+
+    def __enter__(self):
+        raise RuntimeError(
+            '"yield from" should be used as context manager expression')
+
+    def __exit__(self, *args):
+        # This must exist because __enter__ exists, even though that
+        # always raises; that's how the with-statement works.
+        pass  # pragma: no cover
+
+    def __iter__(self):
+        # This is not a coroutine.  It is meant to enable the idiom:
+        #
+        #     with (yield from lock):
+        #         <block>
+        #
+        # as an alternative to:
+        #
+        #     yield from lock.acquire()
+        #     try:
+        #         <block>
+        #     finally:
+        #         lock.release()
+        yield from self.acquire()
+        return _ContextManager(self)
+
+
 # Lock objects to access the _RWLockCore in reader or writer mode
-class _ReaderLock:
+class _ReaderLock(_ContextManagerMixin):
 
     def __init__(self, lock):
         self._lock = lock
@@ -157,33 +188,8 @@ class _ReaderLock:
         status = 'locked' if self._lock._state > 0 else 'unlocked'
         return "<ReaderLock: [{}]>".format(status)
 
-    def __enter__(self):
-        raise RuntimeError(
-            '"yield from" should be used as context manager expression')
 
-    def __exit__(self, *args):
-        # This must exist because __enter__ exists, even though that
-        # always raises; that's how the with-statement works.
-        pass  # pragma: no cover
-
-    def __iter__(self):
-        # This is not a coroutine.  It is meant to enable the idiom:
-        #
-        #     with (yield from lock):
-        #         <block>
-        #
-        # as an alternative to:
-        #
-        #     yield from lock.acquire()
-        #     try:
-        #         <block>
-        #     finally:
-        #         lock.release()
-        yield from self.acquire()
-        return _ContextManager(self)
-
-
-class _WriterLock:
+class _WriterLock(_ContextManagerMixin):
 
     def __init__(self, lock):
         self._lock = lock
@@ -202,31 +208,6 @@ class _WriterLock:
     def __repr__(self):
         status = 'locked' if self._lock._state < 0 else 'unlocked'
         return "<WriterLock: [{}]>".format(status)
-
-    def __enter__(self):
-        raise RuntimeError(
-            '"yield from" should be used as context manager expression')
-
-    def __exit__(self, *args):
-        # This must exist because __enter__ exists, even though that
-        # always raises; that's how the with-statement works.
-        pass  # pragma: no cover
-
-    def __iter__(self):
-        # This is not a coroutine.  It is meant to enable the idiom:
-        #
-        #     with (yield from lock):
-        #         <block>
-        #
-        # as an alternative to:
-        #
-        #     yield from lock.acquire()
-        #     try:
-        #         <block>
-        #     finally:
-        #         lock.release()
-        yield from self.acquire()
-        return _ContextManager(self)
 
 
 class RWLock:
