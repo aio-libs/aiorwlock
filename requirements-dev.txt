@@ -1,6 +1,5 @@
 -e .
 ipython
 ipdb
-nose
 coverage
-
+pytest
