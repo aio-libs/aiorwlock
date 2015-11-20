@@ -38,8 +38,9 @@ classifiers = [
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.3',
     'Programming Language :: Python :: 3.4',
+    'Programming Language :: Python :: 3.5',
     'Operating System :: OS Independent',
-    'Development Status :: 2 - Pre-Alpha',
+    'Development Status :: 4 - Beta',
 ]
 
 
@@ -54,6 +55,6 @@ setup(name='aiorwlock',
       url='https://github.com/aio-libs/aiorwlock',
       download_url='https://pypi.python.org/pypi/aiorwlock',
       license='Apache 2',
-      packages=find_packages(),
+      packages=['aiorlock'],
       install_requires=install_requires,
-      include_package_data = True)
+      include_package_data=True)

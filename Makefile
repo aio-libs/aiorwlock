@@ -11,7 +11,8 @@ vtest:
 	py.test -v
 
 cov cover coverage: flake
-	py.test --cov=aiorwlock --cov=tests --cov-report=term --cov-report=html
+# disable tests coverage (--cov=tests) due error in coverage tool
+	py.test --cov=aiorwlock --cov-report=term --cov-report=html
 	@echo "open file://`pwd`/htmlcov/index.html"
 
 clean:
