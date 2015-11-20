@@ -55,6 +55,6 @@ setup(name='aiorwlock',
       url='https://github.com/aio-libs/aiorwlock',
       download_url='https://pypi.python.org/pypi/aiorwlock',
       license='Apache 2',
-      packages=['aiorlock'],
+      packages=['aiorwlock'],
       install_requires=install_requires,
       include_package_data=True)
