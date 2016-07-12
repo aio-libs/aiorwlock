@@ -31,7 +31,7 @@ async def test_await_read_lock(loop):
 
 
 @pytest.mark.run_loop
-async def test_write_context_manager(loop):
+async def test_await_write_lock(loop):
     rwlock = RWLock(loop=loop)
     writer = rwlock.writer_lock
     assert not writer.locked
