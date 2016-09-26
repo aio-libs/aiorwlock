@@ -38,6 +38,15 @@ class _ContextManager:
             self._lock = None  # Crudely prevent reuse.
 
 
+def create_future(loop):
+    """Compatibility wrapper for the loop.create_future() call introduced in
+    3.5.2."""
+    if hasattr(loop, 'create_future'):
+        return loop.create_future()
+    else:
+        return asyncio.Future(loop=loop)
+
+
 # implementation based on:
 # http://bugs.python.org/issue8800
 
@@ -80,7 +89,7 @@ class _RWLockCore:
                 yield from asyncio.sleep(0.0, loop=self._loop)
             return True
 
-        fut = asyncio.Future(loop=self._loop)
+        fut = create_future(self._loop)
         self._read_waiters.append(fut)
         try:
             yield from fut
@@ -112,7 +121,7 @@ class _RWLockCore:
                 yield from asyncio.sleep(0.0, loop=self._loop)
             return True
 
-        fut = asyncio.Future(loop=self._loop)
+        fut = create_future(self._loop)
         self._write_waiters.append(fut)
         try:
             yield from fut
