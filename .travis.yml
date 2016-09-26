@@ -22,3 +22,15 @@ script:
 
 after_success:
   - codecov
+
+
+deploy:
+  provider: pypi
+  user: andrew.svetlov
+  password:
+    secure: "Pl5Ra/KR0OqE27w8leDsIMzS/K65IEQCtwvuNTrXr6KHZT4hgAwtMS+Up22Ow8J5858nLHzJ0OQKIWPJ8dirZkc8E3fNkFFImK4y4aGkzuDVhQG5Y+Mmj+7UglIEu1/3i/MPmfCftUTuLsUyleYaq/MdGF6zvDoM+H0+DSYgxMA="
+  distributions: "sdist bdist_wheel"
+  on:
+    tags: true
+    all_branches: true
+    python: 3.5
