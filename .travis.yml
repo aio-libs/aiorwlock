@@ -15,10 +15,10 @@ install:
     - pip install -U pytest
     - pip install pytest-cov
     - pip install .
-    - pip install coveralls
+    - pip install codecov
 
 script:
   - make cov
 
 after_success:
-  - coveralls
+  - codecov
