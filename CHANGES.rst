@@ -1,6 +1,11 @@
 Changes
 -------
 
+X.X.X (XXXX-XX-XX)
+^^^^^^^^^^^^^^^^^^
+
+* Use loop.create_future instead asyncio.Future if possible
+
 0.4.0 (2015-09-20)
 ^^^^^^^^^^^^^^^^^^
 
