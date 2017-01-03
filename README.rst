@@ -40,7 +40,7 @@ Requires Python 3.5+
             # or same way you can acquire reader lock
             # async with rwlock.reader: pass
             print("inside writer")
-            yield from asyncio.sleep(0.1, loop=loop)
+            await asyncio.sleep(0.1, loop=loop)
 
     loop.run_until_complete(go())
 
