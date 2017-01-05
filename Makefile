@@ -15,6 +15,9 @@ cov cover coverage: flake
 	pytest --cov=aiorwlock --cov-report=term --cov-report=html
 	@echo "open file://`pwd`/htmlcov/index.html"
 
+mypy:
+	mypy --fast-parser aiorwlock
+
 clean:
 	rm -rf `find . -name __pycache__`
 	rm -f `find . -type f -name '*.py[co]' `

@@ -20,6 +20,7 @@ install:
 
 script:
   - make cov
+  - make mypy
 
 after_success:
   - codecov
