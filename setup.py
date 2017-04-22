@@ -41,6 +41,7 @@ classifiers = [
     'Programming Language :: Python :: 3.5',
     'Operating System :: OS Independent',
     'Development Status :: 4 - Beta',
+    'Framework :: AsyncIO',
 ]
 
 
