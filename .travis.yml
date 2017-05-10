@@ -9,9 +9,10 @@ python:
 matrix:
   include:
     - python: '3.6'
-      env: TOKIO="y"
+      env: TOKIO="y" RUST_VERSION=1.17.0
+
   allow_failures:
-    - env: TOKIO="y"
+    - env: TOKIO="y" RUST_VERSION=1.17.0
 
 install:
     - pip install -r requirements-dev.txt
@@ -19,8 +20,6 @@ install:
     - pip install codecov
     - |
         if [ "$TOKIO" = "y" ]; then
-            export RUST_VERSION=1.17.0
-            python -c "import sysconfig; print('\n'.join(map(repr,sorted(sysconfig.get_config_vars().items()))))"
             mkdir ~/rust-installer
             curl -sL https://static.rust-lang.org/rustup.sh -o ~/rust-installer/rustup.sh
             sh ~/rust-installer/rustup.sh --prefix=~/rust --spec=$RUST_VERSION -y --disable-sudo
