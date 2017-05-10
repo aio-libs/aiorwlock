@@ -14,9 +14,7 @@ matrix:
     - env: TOKIO="y"
 
 install:
-    - pip install flake8
-    - pip install -U pytest
-    - pip install pytest-cov
+    - pip install -r requirements-dev.txt
     - pip install .
     - pip install codecov
     - |
