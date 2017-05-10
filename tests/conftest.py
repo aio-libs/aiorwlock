@@ -7,9 +7,10 @@ import sys
 
 def pytest_generate_tests(metafunc):
     if 'loop_type' in metafunc.fixturenames:
-        loop_type = ['asyncio', 'uvloop']
+        loop_type = ['asyncio']
         if os.environ.get('TOKIO') == 'y':
             loop_type.append('tokio')
+            loop_type.append('uvloop')
         metafunc.parametrize("loop_type", loop_type)
 
 
