@@ -96,6 +96,11 @@ class _RWLockCore:
             self._state += 1
             self._owning.append(me)
             return True
+
+        except asyncio.CancelledError:
+            self._wake_up_first(self._read_waiters)
+            raise
+
         finally:
             self._read_waiters.remove(fut)
 
@@ -128,6 +133,11 @@ class _RWLockCore:
             self._state -= 1
             self._owning.append(me)
             return True
+
+        except asyncio.CancelledError:
+            self._wake_up_first(self._write_waiters)
+            raise
+
         finally:
             self._write_waiters.remove(fut)
 
@@ -143,9 +153,17 @@ class _RWLockCore:
             self._state += 1
         if self._state == 0:
             if self._write_waiters:
-                self._write_waiters[0].set_result(None)
+                self._wake_up_first(self._write_waiters)
+
             elif self._read_waiters:
-                self._read_waiters[0].set_result(None)
+                self._wake_up_first(self._read_waiters)
+
+    def _wake_up_first(self, waiters):
+        """Wake up the first waiter who isn't cancelled."""
+        for fut in waiters:
+            if not fut.done():
+                fut.set_result(None)
+                break
 
 
 class _ContextManagerMixin:
