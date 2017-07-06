@@ -52,6 +52,8 @@ def create_future(loop):
 
 # The internal lock object managing the RWLock state.
 class _RWLockCore:
+    _RL = 1
+    _WL = 2
 
     def __init__(self, fast, loop):
         self._do_yield = not fast
@@ -59,16 +61,18 @@ class _RWLockCore:
 
         self._read_waiters = collections.deque()
         self._write_waiters = collections.deque()
-        self._state = 0  # positive is shared count, negative exclusive count
+        self._r_state = 0
+        self._w_state = 0
         self._owning = []  # tasks will be few, so a list is not inefficient
+        self._lock_type = []
 
     @property
     def read_locked(self):
-        return self._state > 0
+        return self._r_state > 0
 
     @property
     def write_locked(self):
-        return self._state < 0
+        return self._w_state < 0
 
     # Acquire the lock in read mode.
     @asyncio.coroutine
@@ -76,15 +80,17 @@ class _RWLockCore:
         me = asyncio.Task.current_task(loop=self._loop)
 
         if me in self._owning:
-            self._state += 1
+            self._r_state += 1
             self._owning.append(me)
+            self._lock_type.append(self._RL)
             if self._do_yield:
                 yield from asyncio.sleep(0.0, loop=self._loop)
             return True
 
-        if not self._write_waiters and self._state >= 0:
-            self._state += 1
+        if not self._write_waiters and self._r_state >= 0:
+            self._r_state += 1
             self._owning.append(me)
+            self._lock_type.append(self._RL)
             if self._do_yield:
                 yield from asyncio.sleep(0.0, loop=self._loop)
             return True
@@ -93,8 +99,9 @@ class _RWLockCore:
         self._read_waiters.append(fut)
         try:
             yield from fut
-            self._state += 1
+            self._r_state += 1
             self._owning.append(me)
+            self._lock_type.append(self._RL)
             return True
 
         except asyncio.CancelledError:
@@ -111,17 +118,19 @@ class _RWLockCore:
         me = asyncio.Task.current_task(loop=self._loop)
 
         if me in self._owning:
-            if self._state > 0:
+            if self._r_state > 0:
                 raise RuntimeError("cannot upgrade RWLock from read to write")
-            self._state -= 1
+            self._w_state -= 1
             self._owning.append(me)
+            self._lock_type.append(self._WL)
             if self._do_yield:
                 yield from asyncio.sleep(0.0, loop=self._loop)
             return True
 
-        if self._state == 0:
-            self._state -= 1
+        if self._r_state == 0 and self._w_state == 0:
+            self._w_state -= 1
             self._owning.append(me)
+            self._lock_type.append(self._WL)
             if self._do_yield:
                 yield from asyncio.sleep(0.0, loop=self._loop)
             return True
@@ -130,8 +139,9 @@ class _RWLockCore:
         self._write_waiters.append(fut)
         try:
             yield from fut
-            self._state -= 1
+            self._w_state -= 1
             self._owning.append(me)
+            self._lock_type.append(self._WL)
             return True
 
         except asyncio.CancelledError:
@@ -144,14 +154,16 @@ class _RWLockCore:
     def release(self):
         me = asyncio.Task.current_task(loop=self._loop)
         try:
-            self._owning.remove(me)
+            idx = self._owning.index(me)
+            self._owning.pop(idx)
+            lock_type = self._lock_type.pop(idx)
         except ValueError:
             raise RuntimeError("cannot release an un-acquired lock")
-        if self._state > 0:
-            self._state -= 1
+        if lock_type == self._RL:
+            self._r_state -= 1
         else:
-            self._state += 1
-        if self._state == 0:
+            self._w_state += 1
+        if self._r_state == 0 and self._w_state == 0:
             if self._write_waiters:
                 self._wake_up_first(self._write_waiters)
 
@@ -230,7 +242,7 @@ class _ReaderLock(_ContextManagerMixin):
         self._lock.release()
 
     def __repr__(self):
-        status = 'locked' if self._lock._state > 0 else 'unlocked'
+        status = 'locked' if self._lock._r_state > 0 else 'unlocked'
         return "<ReaderLock: [{}]>".format(status)
 
 
@@ -251,7 +263,7 @@ class _WriterLock(_ContextManagerMixin):
         self._lock.release()
 
     def __repr__(self):
-        status = 'locked' if self._lock._state < 0 else 'unlocked'
+        status = 'locked' if self._lock._w_state < 0 else 'unlocked'
         return "<WriterLock: [{}]>".format(status)
 
 
