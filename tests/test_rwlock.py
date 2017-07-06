@@ -122,6 +122,24 @@ def test_many_readers(loop):
 
 
 @pytest.mark.run_loop
+def test_read_upgrade_write_release(loop):
+    rwlock = RWLock(loop=loop)
+    yield from rwlock.writer_lock.acquire()
+    yield from rwlock.reader_lock.acquire()
+    yield from rwlock.reader_lock.acquire()
+
+    rwlock.writer_lock.release()
+    assert not rwlock.writer.locked
+    assert rwlock.reader.locked
+
+    with pytest.raises(RuntimeError):
+        yield from rwlock.writer_lock.acquire()
+
+    rwlock.reader_lock.release()
+    rwlock.reader_lock.release()
+
+
+@pytest.mark.run_loop
 def test_reader_recursion(loop):
 
     rwlock = RWLock(loop=loop)
