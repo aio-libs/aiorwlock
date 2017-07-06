@@ -128,8 +128,14 @@ def test_read_upgrade_write_release(loop):
     yield from rwlock.reader_lock.acquire()
     yield from rwlock.reader_lock.acquire()
 
+    yield from rwlock.reader_lock.acquire()
+    rwlock.reader_lock.release()
+
+    assert rwlock.writer_lock.locked
+
     rwlock.writer_lock.release()
-    assert not rwlock.writer.locked
+    assert not rwlock.writer_lock.locked
+
     assert rwlock.reader.locked
 
     with pytest.raises(RuntimeError):
