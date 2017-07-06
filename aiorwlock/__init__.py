@@ -72,7 +72,7 @@ class _RWLockCore:
 
     @property
     def write_locked(self):
-        return self._w_state < 0
+        return self._w_state > 0
 
     # Acquire the lock in read mode.
     @asyncio.coroutine
@@ -120,7 +120,7 @@ class _RWLockCore:
         if me in self._owning:
             if self._r_state > 0:
                 raise RuntimeError("cannot upgrade RWLock from read to write")
-            self._w_state -= 1
+            self._w_state += 1
             self._owning.append(me)
             self._lock_type.append(self._WL)
             if self._do_yield:
@@ -128,7 +128,7 @@ class _RWLockCore:
             return True
 
         if self._r_state == 0 and self._w_state == 0:
-            self._w_state -= 1
+            self._w_state += 1
             self._owning.append(me)
             self._lock_type.append(self._WL)
             if self._do_yield:
@@ -139,7 +139,7 @@ class _RWLockCore:
         self._write_waiters.append(fut)
         try:
             yield from fut
-            self._w_state -= 1
+            self._w_state += 1
             self._owning.append(me)
             self._lock_type.append(self._WL)
             return True
@@ -162,7 +162,7 @@ class _RWLockCore:
         if lock_type == self._RL:
             self._r_state -= 1
         else:
-            self._w_state += 1
+            self._w_state -= 1
         if self._r_state == 0 and self._w_state == 0:
             if self._write_waiters:
                 self._wake_up_first(self._write_waiters)
@@ -263,7 +263,7 @@ class _WriterLock(_ContextManagerMixin):
         self._lock.release()
 
     def __repr__(self):
-        status = 'locked' if self._lock._w_state < 0 else 'unlocked'
+        status = 'locked' if self._lock._w_state > 0 else 'unlocked'
         return "<WriterLock: [{}]>".format(status)
 
 
