@@ -115,7 +115,7 @@ def test_many_readers(loop):
             yield from _wait(loop=loop)
             locked.pop(-1)
         finally:
-            rwlock.writer_lock.release()
+            rwlock.reader_lock.release()
 
     yield from Bunch(f, N, loop=loop).wait_for_finished()
     assert max(nlocked) > 1
@@ -192,9 +192,9 @@ def test_writer_recursion(loop):
                 yield from _wait(loop=loop)
                 locked.pop(-1)
             finally:
-                rwlock.reader_lock.release()
+                rwlock.writer_lock.release()
         finally:
-            rwlock.reader_lock.release()
+            rwlock.writer_lock.release()
 
     yield from Bunch(f, N, loop=loop).wait_for_finished()
     assert max(nlocked) == 1
