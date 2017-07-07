@@ -64,7 +64,6 @@ class _RWLockCore:
         self._r_state = 0
         self._w_state = 0
         self._owning = []  # tasks will be few, so a list is not inefficient
-        self._lock_type = []
 
     @property
     def read_locked(self):
@@ -79,18 +78,16 @@ class _RWLockCore:
     def acquire_read(self):
         me = asyncio.Task.current_task(loop=self._loop)
 
-        if me in self._owning:
+        if (me, self._RL) in self._owning or (me, self._WL) in self._owning:
             self._r_state += 1
-            self._owning.append(me)
-            self._lock_type.append(self._RL)
+            self._owning.append((me, self._RL))
             if self._do_yield:
                 yield from asyncio.sleep(0.0, loop=self._loop)
             return True
 
         if not self._write_waiters and self._r_state >= 0:
             self._r_state += 1
-            self._owning.append(me)
-            self._lock_type.append(self._RL)
+            self._owning.append((me, self._RL))
             if self._do_yield:
                 yield from asyncio.sleep(0.0, loop=self._loop)
             return True
@@ -100,8 +97,7 @@ class _RWLockCore:
         try:
             yield from fut
             self._r_state += 1
-            self._owning.append(me)
-            self._lock_type.append(self._RL)
+            self._owning.append((me, self._RL))
             return True
 
         except asyncio.CancelledError:
@@ -117,20 +113,19 @@ class _RWLockCore:
     def acquire_write(self):
         me = asyncio.Task.current_task(loop=self._loop)
 
-        if me in self._owning:
-            if self._r_state > 0:
-                raise RuntimeError("cannot upgrade RWLock from read to write")
+        if (me, self._WL) in self._owning:
             self._w_state += 1
-            self._owning.append(me)
-            self._lock_type.append(self._WL)
+            self._owning.append((me, self._WL))
             if self._do_yield:
                 yield from asyncio.sleep(0.0, loop=self._loop)
             return True
+        elif (me, self._RL) in self._owning:
+            if self._r_state > 0:
+                raise RuntimeError("cannot upgrade RWLock from read to write")
 
         if self._r_state == 0 and self._w_state == 0:
             self._w_state += 1
-            self._owning.append(me)
-            self._lock_type.append(self._WL)
+            self._owning.append((me, self._WL))
             if self._do_yield:
                 yield from asyncio.sleep(0.0, loop=self._loop)
             return True
@@ -140,8 +135,7 @@ class _RWLockCore:
         try:
             yield from fut
             self._w_state += 1
-            self._owning.append(me)
-            self._lock_type.append(self._WL)
+            self._owning.append((me, self._WL))
             return True
 
         except asyncio.CancelledError:
@@ -151,12 +145,16 @@ class _RWLockCore:
         finally:
             self._write_waiters.remove(fut)
 
-    def release(self):
+    def release_read(self):
+        self._release(self._RL)
+
+    def release_write(self):
+        self._release(self._WL)
+
+    def _release(self, lock_type):
         me = asyncio.Task.current_task(loop=self._loop)
         try:
-            idx = self._owning.index(me)
-            self._owning.pop(idx)
-            lock_type = self._lock_type.pop(idx)
+            self._owning.remove((me, lock_type))
         except ValueError:
             raise RuntimeError("cannot release an un-acquired lock")
         if lock_type == self._RL:
@@ -239,7 +237,7 @@ class _ReaderLock(_ContextManagerMixin):
         yield from self._lock.acquire_read()
 
     def release(self):
-        self._lock.release()
+        self._lock.release_read()
 
     def __repr__(self):
         status = 'locked' if self._lock._r_state > 0 else 'unlocked'
@@ -260,7 +258,7 @@ class _WriterLock(_ContextManagerMixin):
         yield from self._lock.acquire_write()
 
     def release(self):
-        self._lock.release()
+        self._lock.release_write()
 
     def __repr__(self):
         status = 'locked' if self._lock._w_state > 0 else 'unlocked'
