@@ -107,3 +107,30 @@ def test_writers_deadlock(loop):
     assert task_c.done()
     assert not rl.locked
     assert not wl.locked
+
+
+@pytest.mark.run_loop
+def test_readers_cancel(loop):
+    rwlock = RWLock(loop=loop)
+    rl = rwlock.reader
+    wl = rwlock.writer
+
+    @asyncio.coroutine
+    def coro(lock):
+        with (yield from lock):
+            assert lock.locked
+            yield from asyncio.sleep(0.2, loop)
+
+    with (yield from wl):
+        assert wl.locked
+        task_b = ensure_future(coro(rl), loop=loop)
+        task_c = ensure_future(coro(rl), loop=loop)
+        yield from asyncio.sleep(0.1, loop)
+
+    task_b.cancel()
+    assert not wl.locked
+
+    yield from task_c
+    assert task_c.done()
+    assert not rl.locked
+    assert not wl.locked
