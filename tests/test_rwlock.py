@@ -465,3 +465,26 @@ def test_write_locked(loop):
     assert not rwlock.writer_lock.locked
     with (yield from rwlock.writer_lock):
         assert rwlock.writer_lock.locked
+
+
+@pytest.mark.run_loop
+def test_write_read_lock_multiple_tasks(loop):
+    rwlock = RWLock(loop=loop)
+    rl = rwlock.reader
+    wl = rwlock.writer
+
+    @asyncio.coroutine
+    def coro():
+        with (yield from rl):
+            assert not wl.locked
+            assert rl.locked
+            yield from asyncio.sleep(0.2, loop)
+
+    with (yield from wl):
+        assert wl.locked
+        assert not rl.locked
+        task = asyncio.Task(coro(), loop=loop)
+        yield from asyncio.sleep(0.1, loop)
+    yield from task
+    assert not rl.locked
+    assert not wl.locked
