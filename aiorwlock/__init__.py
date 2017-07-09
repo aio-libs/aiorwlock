@@ -85,7 +85,8 @@ class _RWLockCore:
                 yield from asyncio.sleep(0.0, loop=self._loop)
             return True
 
-        if not self._write_waiters and self._r_state >= 0:
+        if (not self._write_waiters and
+                self._r_state >= 0 and self._w_state == 0):
             self._r_state += 1
             self._owning.append((me, self._RL))
             if self._do_yield:
@@ -101,7 +102,7 @@ class _RWLockCore:
             return True
 
         except asyncio.CancelledError:
-            self._wake_up_first(self._read_waiters)
+            self._wake_up()
             raise
 
         finally:
@@ -139,7 +140,7 @@ class _RWLockCore:
             return True
 
         except asyncio.CancelledError:
-            self._wake_up_first(self._write_waiters)
+            self._wake_up()
             raise
 
         finally:
@@ -161,6 +162,9 @@ class _RWLockCore:
             self._r_state -= 1
         else:
             self._w_state -= 1
+        self._wake_up()
+
+    def _wake_up(self):
         if self._r_state == 0 and self._w_state == 0:
             if self._write_waiters:
                 self._wake_up_first(self._write_waiters)
