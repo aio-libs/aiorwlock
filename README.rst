@@ -4,6 +4,9 @@ aiorwlock
     :target: https://travis-ci.org/aio-libs/aiorwlock
 .. image:: https://coveralls.io/repos/jettify/aiorwlock/badge.png?branch=master
     :target: https://coveralls.io/r/aio-libs/aiorwlock?branch=master
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+    :target: https://gitter.im/aio-libs/Lobby
+    :alt: Chat on Gitter
 
 Read write lock for asyncio_ . A ``RWLock`` maintains a pair of associated
 locks, one for read-only operations and one for writing. The read lock may be
