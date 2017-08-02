@@ -1,4 +1,4 @@
 -e .
 pytest==3.2.0
 pytest-cov==2.5.1
-flake8==3.4.0
+flake8==3.4.1
