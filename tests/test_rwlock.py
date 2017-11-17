@@ -115,10 +115,34 @@ def test_many_readers(loop):
             yield from _wait(loop=loop)
             locked.pop(-1)
         finally:
-            rwlock.writer_lock.release()
+            rwlock.reader_lock.release()
 
     yield from Bunch(f, N, loop=loop).wait_for_finished()
     assert max(nlocked) > 1
+
+
+@pytest.mark.run_loop
+def test_read_upgrade_write_release(loop):
+    rwlock = RWLock(loop=loop)
+    yield from rwlock.writer_lock.acquire()
+    yield from rwlock.reader_lock.acquire()
+    yield from rwlock.reader_lock.acquire()
+
+    yield from rwlock.reader_lock.acquire()
+    rwlock.reader_lock.release()
+
+    assert rwlock.writer_lock.locked
+
+    rwlock.writer_lock.release()
+    assert not rwlock.writer_lock.locked
+
+    assert rwlock.reader.locked
+
+    with pytest.raises(RuntimeError):
+        yield from rwlock.writer_lock.acquire()
+
+    rwlock.reader_lock.release()
+    rwlock.reader_lock.release()
 
 
 @pytest.mark.run_loop
@@ -168,9 +192,9 @@ def test_writer_recursion(loop):
                 yield from _wait(loop=loop)
                 locked.pop(-1)
             finally:
-                rwlock.reader_lock.release()
+                rwlock.writer_lock.release()
         finally:
-            rwlock.reader_lock.release()
+            rwlock.writer_lock.release()
 
     yield from Bunch(f, N, loop=loop).wait_for_finished()
     assert max(nlocked) == 1
@@ -441,3 +465,26 @@ def test_write_locked(loop):
     assert not rwlock.writer_lock.locked
     with (yield from rwlock.writer_lock):
         assert rwlock.writer_lock.locked
+
+
+@pytest.mark.run_loop
+def test_write_read_lock_multiple_tasks(loop):
+    rwlock = RWLock(loop=loop)
+    rl = rwlock.reader
+    wl = rwlock.writer
+
+    @asyncio.coroutine
+    def coro():
+        with (yield from rl):
+            assert not wl.locked
+            assert rl.locked
+            yield from asyncio.sleep(0.2, loop)
+
+    with (yield from wl):
+        assert wl.locked
+        assert not rl.locked
+        task = asyncio.Task(coro(), loop=loop)
+        yield from asyncio.sleep(0.1, loop)
+    yield from task
+    assert not rl.locked
+    assert not wl.locked
