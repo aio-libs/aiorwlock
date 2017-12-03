@@ -1,8 +1,11 @@
 Changes
 -------
 
-X.X.X (XXXX-XX-XX)
+0.5.0 (2017-12-03)
 ^^^^^^^^^^^^^^^^^^
+
+* Fix corner cases and deadlock when we upgrade lock from write to
+  read #39
 
 * Use loop.create_future instead asyncio.Future if possible
 

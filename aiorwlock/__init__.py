@@ -2,7 +2,7 @@ import asyncio
 import collections
 import sys
 
-__version__ = '0.4.0'
+__version__ = '0.5.0'
 __all__ = ['RWLock']
 
 PY_35 = sys.version_info >= (3, 5, 0)
