@@ -165,16 +165,16 @@ class _RWLockCore:
         self._wake_up()
 
     def _wake_up(self):
-        '''
-        If no one is reading or writing, wake up write waiters first, only one write waiter should be waken up, 
-        if no write waiters and have read waiters, wake up all read waiters.
+        '''If no one is reading or writing, wake up write waiters
+        first, only one write waiter should be waken up, if no
+        write waiters and have read waiters, wake up all read waiters.
         '''
         if self._r_state == 0 and self._w_state == 0:
             if self._write_waiters:
-                #Wake up one write writer only
+                # Only wake up one write writer
                 self._wake_up_first(self._write_waiters)
             elif self._read_waiters:
-                #Wake up all read waiters
+                # Wake up all read waiters
                 self._wake_up_all(self._read_waiters)
 
     def _wake_up_first(self, waiters):
@@ -183,11 +183,13 @@ class _RWLockCore:
             if not fut.done():
                 fut.set_result(None)
                 break
-
+    
     def _wake_up_all(self, waiters):
+        '''Wake up all waiters'''
         for fut in waiters:
             if not fut.done():
                 fut.set_result(None)
+
 
 class _ContextManagerMixin:
 
