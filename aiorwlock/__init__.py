@@ -183,7 +183,7 @@ class _RWLockCore:
             if not fut.done():
                 fut.set_result(None)
                 break
-    
+ 
     def _wake_up_all(self, waiters):
         '''Wake up all waiters'''
         for fut in waiters:
