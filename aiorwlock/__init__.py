@@ -167,7 +167,7 @@ class _RWLockCore:
     def _wake_up(self):
         # If no one is reading or writing, wake up write waiters
         # first, only one write waiter should be waken up, if no
-        # write waiters and have read waiters, wake up all read 
+        # write waiters and have read waiters, wake up all read
         # waiters.
         if self._r_state == 0 and self._w_state == 0:
             if self._write_waiters:
