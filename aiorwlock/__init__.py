@@ -176,14 +176,14 @@ class _RWLockCore:
                 self._wake_up_all(self._read_waiters)
 
     def _wake_up_first(self, waiters):
-        """Wake up the first waiter who isn't cancelled."""
+        # Wake up the first waiter who isn't cancelled.
         for fut in waiters:
             if not fut.done():
                 fut.set_result(None)
                 break
 
     def _wake_up_all(self, waiters):
-        """Wake up all waiters."""
+        # Wake up all not cancelled waiters.
         for fut in waiters:
             if not fut.done():
                 fut.set_result(None)
