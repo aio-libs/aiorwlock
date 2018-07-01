@@ -1,6 +1,10 @@
 Changes
 -------
 
+0.5.1 (YYYY-MM-DD)
+^^^^^^^^^^^^^^^^^^
+* Wake up all readers after writer releases lock #60 (thanks @ranyixu)
+
 0.5.0 (2017-12-03)
 ^^^^^^^^^^^^^^^^^^
 
