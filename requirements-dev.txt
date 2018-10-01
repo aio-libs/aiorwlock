@@ -1,4 +1,4 @@
 -e .
 pytest==3.8.1
-pytest-cov==2.5.1
+pytest-cov==2.6.0
 flake8==3.5.0
