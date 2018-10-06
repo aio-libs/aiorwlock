@@ -1,19 +1,14 @@
 import os
 import re
 import sys
-from setuptools import setup, find_packages
+from setuptools import setup
 
 
 install_requires = []
 
-PY_VER = sys.version_info
 
-if PY_VER >= (3, 4):
-    pass
-elif PY_VER >= (3, 3):
-    install_requires.append('asyncio')
-else:
-    raise RuntimeError("aiorwlock doesn't suppport Python earllier than 3.3")
+if sys.version_info < (3, 5, 3):
+    raise RuntimeError("aiorwlock requires Python 3.5.3+")
 
 
 def read(f):
@@ -36,9 +31,9 @@ classifiers = [
     'License :: OSI Approved :: Apache Software License',
     'Intended Audience :: Developers',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.3',
-    'Programming Language :: Python :: 3.4',
     'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
     'Operating System :: OS Independent',
     'Development Status :: 4 - Beta',
     'Framework :: AsyncIO',
