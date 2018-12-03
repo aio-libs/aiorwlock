@@ -1,6 +1,6 @@
 import asyncio
 
-from aiorwlock import RWLock
+from aiorwlock import RWLock, current_task
 import pytest
 
 
@@ -24,7 +24,7 @@ class Bunch(object):
 
         @asyncio.coroutine
         def task():
-            tid = asyncio.Task.current_task(loop=self._loop)
+            tid = current_task(loop=self._loop)
             self.started.append(tid)
             try:
                 yield from f()
