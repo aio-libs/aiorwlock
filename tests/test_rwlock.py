@@ -45,6 +45,7 @@ class Bunch(object):
         self._can_exit = True
 
 
+@asyncio.coroutine
 def _wait(loop=None):
     _loop = loop or asyncio.get_event_loop()
     yield from asyncio.sleep(0.01, loop=_loop)
