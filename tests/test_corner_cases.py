@@ -5,10 +5,7 @@ import contextlib
 from aiorwlock import RWLock, create_future
 
 
-if hasattr(asyncio, 'ensure_future'):
-    ensure_future = asyncio.ensure_future
-else:
-    ensure_future = asyncio.async  # Deprecated since 3.4.4
+ensure_future = asyncio.ensure_future
 
 
 @contextlib.contextmanager

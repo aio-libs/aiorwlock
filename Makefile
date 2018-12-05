@@ -2,7 +2,7 @@
 
 
 flake:
-	flake8 aiorwlock
+	flake8 aiorwlock tests examples
 
 test: flake
 	pytest -s
@@ -10,7 +10,10 @@ test: flake
 vtest:
 	pytest -v
 
-cov cover coverage: flake
+checkrst:
+	python setup.py check --restructuredtext
+
+cov cover coverage: flake checkrst
 # disable tests coverage (--cov=tests) due error in coverage tool
 	pytest -sv --cov=aiorwlock --cov-report=term --cov-report=html
 	@echo "open file://`pwd`/htmlcov/index.html"

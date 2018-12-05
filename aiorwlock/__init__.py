@@ -2,10 +2,16 @@ import asyncio
 import collections
 import sys
 
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 __all__ = ['RWLock']
 
-PY_35 = sys.version_info >= (3, 5, 0)
+PY_35 = sys.version_info >= (3, 5, 3)
+
+
+if hasattr(asyncio, 'current_task'):
+    current_task = asyncio.current_task
+else:
+    current_task = asyncio.Task.current_task
 
 
 class _ContextManager:
@@ -76,7 +82,7 @@ class _RWLockCore:
     # Acquire the lock in read mode.
     @asyncio.coroutine
     def acquire_read(self):
-        me = asyncio.Task.current_task(loop=self._loop)
+        me = current_task(loop=self._loop)
 
         if (me, self._RL) in self._owning or (me, self._WL) in self._owning:
             self._r_state += 1
@@ -112,7 +118,7 @@ class _RWLockCore:
     # ensurring that 'readers' will yield to writers.
     @asyncio.coroutine
     def acquire_write(self):
-        me = asyncio.Task.current_task(loop=self._loop)
+        me = current_task(loop=self._loop)
 
         if (me, self._WL) in self._owning:
             self._w_state += 1
@@ -153,7 +159,7 @@ class _RWLockCore:
         self._release(self._WL)
 
     def _release(self, lock_type):
-        me = asyncio.Task.current_task(loop=self._loop)
+        me = current_task(loop=self._loop)
         try:
             self._owning.remove((me, lock_type))
         except ValueError:
