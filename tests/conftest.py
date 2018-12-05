@@ -1,16 +1,11 @@
 import asyncio
 import pytest
 import gc
-import os
-import sys
 
 
 def pytest_generate_tests(metafunc):
     if 'loop_type' in metafunc.fixturenames:
-        loop_type = ['asyncio']
-        if os.environ.get('TOKIO') == 'y':
-            loop_type.append('tokio')
-            loop_type.append('uvloop')
+        loop_type = ['asyncio', 'uvloop']
         metafunc.parametrize("loop_type", loop_type)
 
 
@@ -27,11 +22,6 @@ def loop(request, loop_type, debug):
     if loop_type == 'uvloop':
         import uvloop
         loop = uvloop.new_event_loop()
-    elif loop_type == 'tokio':
-        import tokio
-        policy = tokio.TokioLoopPolicy()
-        asyncio.set_event_loop_policy(policy)
-        loop = tokio.new_event_loop()
     else:
         loop = asyncio.new_event_loop()
 
@@ -71,9 +61,3 @@ def pytest_runtest_setup(item):
     if 'run_loop' in item.keywords and 'loop' not in item.fixturenames:
         # inject an event loop fixture for all async tests
         item.fixturenames.append('loop')
-
-
-def pytest_ignore_collect(path, config):
-    if 'pep492' in str(path):
-        if sys.version_info < (3, 5, 0):
-            return True
