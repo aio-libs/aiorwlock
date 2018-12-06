@@ -97,8 +97,8 @@ def test_release_unlocked(loop):
 
 
 @pytest.mark.run_loop
-async def test_many_readers(loop):
-    rwlock = RWLock(loop=loop)
+async def test_many_readers(loop, fast_track):
+    rwlock = RWLock(loop=loop, fast=fast_track)
     N = 5
     locked = []
     nlocked = []
@@ -143,9 +143,9 @@ async def test_read_upgrade_write_release(loop):
 
 
 @pytest.mark.run_loop
-async def test_reader_recursion(loop):
+async def test_reader_recursion(loop, fast_track):
 
-    rwlock = RWLock(loop=loop)
+    rwlock = RWLock(loop=loop, fast=fast_track)
     N = 5
     locked = []
     nlocked = []
@@ -170,8 +170,8 @@ async def test_reader_recursion(loop):
 
 
 @pytest.mark.run_loop
-async def test_writer_recursion(loop):
-    rwlock = RWLock(loop=loop)
+async def test_writer_recursion(loop, fast_track):
+    rwlock = RWLock(loop=loop, fast=fast_track)
     N = 5
     locked = []
     nlocked = []
@@ -196,8 +196,8 @@ async def test_writer_recursion(loop):
 
 
 @pytest.mark.run_loop
-async def test_writer_then_reader_recursion(loop):
-    rwlock = RWLock(loop=loop)
+async def test_writer_then_reader_recursion(loop, fast_track):
+    rwlock = RWLock(loop=loop, fast=fast_track)
     N = 5
     locked = []
     nlocked = []
@@ -241,8 +241,8 @@ async def test_writer_recursion_fail(loop):
 
 
 @pytest.mark.run_loop
-async def test_readers_writers(loop):
-    rwlock = RWLock(loop=loop)
+async def test_readers_writers(loop, fast_track):
+    rwlock = RWLock(loop=loop, fast=fast_track)
     N = 5
     rlocked = []
     wlocked = []
@@ -396,7 +396,7 @@ async def test_writer_success_with_statement(loop):
         nonlocal reads, writes
         while writes < 2:
             # print("current pre-reads", reads)
-            with (await rwlock.reader_lock):
+            async with rwlock.reader_lock:
                 reads += 1
                 # print("current reads", reads)
 
@@ -409,7 +409,7 @@ async def test_writer_success_with_statement(loop):
             await _wait(loop=loop)
 
             # print("current pre-writes", reads)
-            with (await rwlock.writer_lock):
+            async with rwlock.writer_lock:
                 writes += 1
 
     b1 = Bunch(r, N, loop=loop)
@@ -422,49 +422,49 @@ async def test_writer_success_with_statement(loop):
     # print('>>>>>>>>>>>', writes, reads)
 
 
-def test_raise_error_on_with_for_reader_lock(loop):
-    rwlock = RWLock(loop=loop)
+def test_raise_error_on_with_for_reader_lock(loop, fast_track):
+    rwlock = RWLock(loop=loop, fast=fast_track)
     with pytest.raises(RuntimeError):
         with rwlock.reader_lock:
             pass
 
 
-def test_raise_error_on_with_for_writer_lock(loop):
-    rwlock = RWLock(loop=loop)
+def test_raise_error_on_with_for_writer_lock(loop, fast_track):
+    rwlock = RWLock(loop=loop, fast=fast_track)
     with pytest.raises(RuntimeError):
         with rwlock.writer_lock:
             pass
 
 
 @pytest.mark.run_loop
-async def test_read_locked(loop):
-    rwlock = RWLock(loop=loop)
+async def test_read_locked(loop, fast_track):
+    rwlock = RWLock(loop=loop, fast=fast_track)
     assert not rwlock.reader_lock.locked
-    with (await rwlock.reader_lock):
+    async with rwlock.reader_lock:
         assert rwlock.reader_lock.locked
 
 
 @pytest.mark.run_loop
-async def test_write_locked(loop):
-    rwlock = RWLock(loop=loop)
+async def test_write_locked(loop, fast_track):
+    rwlock = RWLock(loop=loop, fast=fast_track)
     assert not rwlock.writer_lock.locked
-    with (await rwlock.writer_lock):
+    async with rwlock.writer_lock:
         assert rwlock.writer_lock.locked
 
 
 @pytest.mark.run_loop
-async def test_write_read_lock_multiple_tasks(loop):
-    rwlock = RWLock(loop=loop)
+async def test_write_read_lock_multiple_tasks(loop, fast_track):
+    rwlock = RWLock(loop=loop, fast=fast_track)
     rl = rwlock.reader
     wl = rwlock.writer
 
     async def coro():
-        with (await rl):
+        async with rl:
             assert not wl.locked
             assert rl.locked
             await asyncio.sleep(0.2, loop)
 
-    with (await wl):
+    async with wl:
         assert wl.locked
         assert not rl.locked
         task = asyncio.Task(coro(), loop=loop)

@@ -2,7 +2,7 @@ import pytest
 import asyncio
 import contextlib
 
-from aiorwlock import RWLock, create_future, current_task
+from aiorwlock import RWLock, current_task
 
 
 ensure_future = asyncio.ensure_future
@@ -28,11 +28,11 @@ async def test_get_write_then_read(loop):
 
     rl = rwlock.reader
     wl = rwlock.writer
-    with (await wl):
+    async with wl:
         assert wl.locked
         assert not rl.locked
 
-        with (await rl):
+        async with rl:
             assert wl.locked
             assert rl.locked
 
@@ -43,22 +43,22 @@ async def test_get_write_then_read_and_write_again(loop):
     rl = rwlock.reader
     wl = rwlock.writer
 
-    f = create_future(loop)
+    f = loop.create_future()
     writes = []
 
     async def get_write_lock():
         await f
         with should_fail(.1, loop):
-            with (await wl):
+            async with wl:
                 assert wl.locked
                 writes.append('should not be here')
 
     ensure_future(get_write_lock(), loop=loop)
 
-    with (await wl):
+    async with wl:
         assert wl.locked
 
-        with (await rl):
+        async with rl:
             f.set_result(None)
             await asyncio.sleep(0.12, loop=loop)
             # second task can not append to writes
@@ -84,11 +84,11 @@ async def test_writers_deadlock(loop):
     #   https://github.com/python/cpython/pull/1031
 
     async def coro():
-        with (await wl):
+        async with wl:
             assert wl.locked
             await asyncio.sleep(.2, loop)
 
-    with (await rl):
+    async with rl:
         assert rl.locked
         task_b = ensure_future(coro(), loop=loop)
         task_c = ensure_future(coro(), loop=loop)
@@ -111,11 +111,11 @@ async def test_readers_cancel(loop):
     wl = rwlock.writer
 
     async def coro(lock):
-        with (await lock):
+        async with lock:
             assert lock.locked
             await asyncio.sleep(0.2, loop)
 
-    with (await wl):
+    async with wl:
         assert wl.locked
         task_b = ensure_future(coro(rl), loop=loop)
         task_c = ensure_future(coro(rl), loop=loop)
