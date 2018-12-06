@@ -1,7 +1,7 @@
 aiorwlock
 =========
-.. image:: https://travis-ci.org/aio-libs/aiorwlock.svg?branch=master
-    :target: https://travis-ci.org/aio-libs/aiorwlock
+.. image:: https://travis-ci.com/aio-libs/aiorwlock.svg?branch=master
+    :target: https://travis-ci.com/aio-libs/aiorwlock
 .. image:: https://coveralls.io/repos/jettify/aiorwlock/badge.png?branch=master
     :target: https://coveralls.io/r/aio-libs/aiorwlock?branch=master
 .. image:: https://badges.gitter.im/Join%20Chat.svg
