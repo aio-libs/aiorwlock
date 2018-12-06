@@ -2,7 +2,7 @@ import asyncio
 import collections
 import sys
 
-__version__ = '0.5.1'
+__version__ = '0.6.0'
 __all__ = ['RWLock']
 
 PY_35 = sys.version_info >= (3, 5, 3)
@@ -12,45 +12,6 @@ if hasattr(asyncio, 'current_task'):
     current_task = asyncio.current_task
 else:
     current_task = asyncio.Task.current_task
-
-
-class _ContextManager:
-    """Context manager.
-
-    This enables the following idiom for acquiring and releasing a
-    lock around a block:
-
-        with (yield from lock):
-            <block>
-
-    while failing loudly when accidentally using:
-
-        with lock:
-            <block>
-    """
-
-    def __init__(self, lock):
-        self._lock = lock
-
-    def __enter__(self):
-        # We have no use for the "as ..."  clause in the with
-        # statement for locks.
-        return None
-
-    def __exit__(self, *args):
-        try:
-            self._lock.release()
-        finally:
-            self._lock = None  # Crudely prevent reuse.
-
-
-def create_future(loop):
-    """Compatibility wrapper for the loop.create_future() call introduced in
-    3.5.2."""
-    if hasattr(loop, 'create_future'):
-        return loop.create_future()
-    else:
-        return asyncio.Future(loop=loop)
 
 
 # implementation based on:
@@ -80,15 +41,14 @@ class _RWLockCore:
         return self._w_state > 0
 
     # Acquire the lock in read mode.
-    @asyncio.coroutine
-    def acquire_read(self):
+    async def acquire_read(self):
         me = current_task(loop=self._loop)
 
         if (me, self._RL) in self._owning or (me, self._WL) in self._owning:
             self._r_state += 1
             self._owning.append((me, self._RL))
             if self._do_yield:
-                yield from asyncio.sleep(0.0, loop=self._loop)
+                await asyncio.sleep(0.0, loop=self._loop)
             return True
 
         if (not self._write_waiters and
@@ -96,13 +56,13 @@ class _RWLockCore:
             self._r_state += 1
             self._owning.append((me, self._RL))
             if self._do_yield:
-                yield from asyncio.sleep(0.0, loop=self._loop)
+                await asyncio.sleep(0.0, loop=self._loop)
             return True
 
-        fut = create_future(self._loop)
+        fut = self._loop.create_future()
         self._read_waiters.append(fut)
         try:
-            yield from fut
+            await fut
             self._r_state += 1
             self._owning.append((me, self._RL))
             return True
@@ -116,15 +76,14 @@ class _RWLockCore:
 
     # Acquire the lock in write mode.  A 'waiting' count is maintain ed,
     # ensurring that 'readers' will yield to writers.
-    @asyncio.coroutine
-    def acquire_write(self):
+    async def acquire_write(self):
         me = current_task(loop=self._loop)
 
         if (me, self._WL) in self._owning:
             self._w_state += 1
             self._owning.append((me, self._WL))
             if self._do_yield:
-                yield from asyncio.sleep(0.0, loop=self._loop)
+                await asyncio.sleep(0.0, loop=self._loop)
             return True
         elif (me, self._RL) in self._owning:
             if self._r_state > 0:
@@ -134,13 +93,13 @@ class _RWLockCore:
             self._w_state += 1
             self._owning.append((me, self._WL))
             if self._do_yield:
-                yield from asyncio.sleep(0.0, loop=self._loop)
+                await asyncio.sleep(0.0, loop=self._loop)
             return True
 
-        fut = create_future(self._loop)
+        fut = self._loop.create_future()
         self._write_waiters.append(fut)
         try:
-            yield from fut
+            await fut
             self._w_state += 1
             self._owning.append((me, self._WL))
             return True
@@ -199,46 +158,21 @@ class _ContextManagerMixin:
 
     def __enter__(self):
         raise RuntimeError(
-            '"yield from" should be used as context manager expression')
+            '"await" should be used as context manager expression')
 
     def __exit__(self, *args):
         # This must exist because __enter__ exists, even though that
         # always raises; that's how the with-statement works.
         pass  # pragma: no cover
 
-    def __iter__(self):
-        # This is not a coroutine.  It is meant to enable the idiom:
-        #
-        #     with (yield from lock):
-        #         <block>
-        #
-        # as an alternative to:
-        #
-        #     yield from lock.acquire()
-        #     try:
-        #         <block>
-        #     finally:
-        #         lock.release()
-        yield from self.acquire()
-        return _ContextManager(self)
+    async def __aenter__(self):
+        await self.acquire()
+        # We have no use for the "as ..."  clause in the with
+        # statement for locks.
+        return None
 
-    if PY_35:
-
-        def __await__(self):
-            # To make "with await lock" work.
-            yield from self.acquire()
-            return _ContextManager(self)
-
-        @asyncio.coroutine
-        def __aenter__(self):
-            yield from self.acquire()
-            # We have no use for the "as ..."  clause in the with
-            # statement for locks.
-            return None
-
-        @asyncio.coroutine
-        def __aexit__(self, exc_type, exc, tb):
-            self.release()
+    async def __aexit__(self, exc_type, exc, tb):
+        self.release()
 
 
 # Lock objects to access the _RWLockCore in reader or writer mode
@@ -251,9 +185,8 @@ class _ReaderLock(_ContextManagerMixin):
     def locked(self):
         return self._lock.read_locked
 
-    @asyncio.coroutine
-    def acquire(self):
-        yield from self._lock.acquire_read()
+    async def acquire(self):
+        await self._lock.acquire_read()
 
     def release(self):
         self._lock.release_read()
@@ -272,9 +205,8 @@ class _WriterLock(_ContextManagerMixin):
     def locked(self):
         return self._lock.write_locked
 
-    @asyncio.coroutine
-    def acquire(self):
-        yield from self._lock.acquire_write()
+    async def acquire(self):
+        await self._lock.acquire_write()
 
     def release(self):
         self._lock.release_write()
