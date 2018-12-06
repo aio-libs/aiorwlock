@@ -47,29 +47,6 @@ Requires Python 3.5+
 
     loop.run_until_complete(go())
 
-Old-school way
---------------
-
-Requires Python 3.3+
-
-.. code:: python
-
-    import asyncio
-    import aiorwlock
-    loop = asyncio.get_event_loop()
-
-
-    @asyncio.coroutine
-    def go():
-        rwlock = aiorwlock.RWLock(loop=loop)
-        with (yield from rwlock.writer):
-            # or same way you can acquire reader lock
-            # with (yield from rwlock.reader): pass
-            print("inside writer")
-            yield from asyncio.sleep(0.1, loop=loop)
-
-    loop.run_until_complete(go())
-
 
 Fast path
 ---------
