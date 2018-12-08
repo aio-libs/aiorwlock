@@ -32,7 +32,7 @@ class Bunch(object):
                 while not self._can_exit:
                     await asyncio.sleep(0.01, loop=self._loop)
 
-        for i in range(n):
+        for _ in range(n):
             t = asyncio.Task(task(), loop=self._loop)
             self._futures.append(t)
 
@@ -315,7 +315,7 @@ async def test_writer_success(loop):
         while reads == 0:
             await _wait(loop=loop)
 
-        for i in range(2):
+        for _ in range(2):
             await _wait(loop=loop)
 
             # print("current pre-writes", reads)
@@ -362,7 +362,7 @@ async def test_writer_success_fast(loop):
         while reads == 0:
             await _wait(loop=loop)
 
-        for i in range(2):
+        for _ in range(2):
             await _wait(loop=loop)
 
             # print("current pre-writes", reads)
@@ -405,7 +405,7 @@ async def test_writer_success_with_statement(loop):
         while reads == 0:
             await _wait(loop=loop)
 
-        for i in range(2):
+        for _ in range(2):
             await _wait(loop=loop)
 
             # print("current pre-writes", reads)

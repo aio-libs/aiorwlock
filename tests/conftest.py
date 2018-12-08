@@ -12,10 +12,10 @@ def fast_track(request):
 def pytest_generate_tests(metafunc):
     if 'loop_type' in metafunc.fixturenames:
         loop_type = ['asyncio', 'uvloop']
-        metafunc.parametrize("loop_type", loop_type)
+        metafunc.parametrize('loop_type', loop_type)
 
 
-@pytest.fixture(scope="session", params=[True, False],
+@pytest.fixture(scope='session', params=[True, False],
                 ids=['debug:true', 'debug:false'])
 def debug(request):
     return request.param
