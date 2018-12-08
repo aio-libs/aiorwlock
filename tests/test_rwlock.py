@@ -472,3 +472,11 @@ async def test_write_read_lock_multiple_tasks(loop, fast_track):
     await task
     assert not rl.locked
     assert not wl.locked
+
+
+def test_current_task(loop):
+    with pytest.raises(RuntimeError):
+        current_task(loop=loop)
+
+    with pytest.raises(RuntimeError):
+        current_task()
