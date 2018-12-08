@@ -1,5 +1,9 @@
 -e .
-pytest==4.0.1
-pytest-cov==2.6.0
+bandit==1.5.1
+flake8-bugbear==18.8.0
+flake8-quotes==1.0.0
 flake8==3.6.0
+pyroma==2.4
+pytest-cov==2.6.0
+pytest==4.0.1
 uvloop==0.11.3

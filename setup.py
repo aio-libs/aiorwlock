@@ -53,4 +53,6 @@ setup(name='aiorwlock',
       license='Apache 2',
       packages=['aiorwlock'],
       install_requires=install_requires,
+      keywords=['aiorwlock', 'lock', 'asyncio'],
+      zip_safe=True,
       include_package_data=True)

@@ -13,7 +13,13 @@ vtest:
 checkrst:
 	python setup.py check --restructuredtext
 
-cov cover coverage: flake checkrst
+pyroma:
+	pyroma -d .
+
+bandit:
+	bandit -r ./aiorwlock
+
+cov cover coverage: flake checkrst pyroma bandit
 # disable tests coverage (--cov=tests) due error in coverage tool
 	pytest -sv --cov=aiorwlock --cov-report=term --cov-report=html
 	@echo "open file://`pwd`/htmlcov/index.html"
