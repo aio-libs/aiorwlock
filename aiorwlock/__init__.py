@@ -3,7 +3,12 @@ import sys
 
 from collections import deque
 from asyncio import Task, Future
-from typing import Any, List, Tuple, Optional, Deque, Callable  # noqa
+from typing import Any, List, Tuple, Optional, Callable  # noqa
+
+try:
+    from typing import Deque
+except ImportError:
+    Deque = deque  # type: ignore
 
 
 Loop = asyncio.AbstractEventLoop
