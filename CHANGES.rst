@@ -1,9 +1,17 @@
 Changes
 -------
 
-0.5.1 (YYYY-MM-DD)
+0.6.0 (YYYY-MM-DD)
 ^^^^^^^^^^^^^^^^^^
 * Wake up all readers after writer releases lock #60 (thanks @ranyixu)
+
+* Fixed Python 3.7 compatibility
+
+* Removed old `yield from` syntax
+
+* Minimal supported version is Python 3.5.3
+
+* Removed support for none async context managers
 
 0.5.0 (2017-12-03)
 ^^^^^^^^^^^^^^^^^^
