@@ -74,8 +74,8 @@ class _RWLockCore:
         finally:
             self._read_waiters.remove(fut)
 
-    # Acquire the lock in write mode.  A 'waiting' count is maintain ed,
-    # ensurring that 'readers' will yield to writers.
+    # Acquire the lock in write mode.  A 'waiting' count is maintained,
+    # ensuring that 'readers' will yield to writers.
     async def acquire_write(self):
         me = current_task(loop=self._loop)
 
@@ -87,7 +87,7 @@ class _RWLockCore:
             return True
         elif (me, self._RL) in self._owning:
             if self._r_state > 0:
-                raise RuntimeError("cannot upgrade RWLock from read to write")
+                raise RuntimeError('Cannot upgrade RWLock from read to write')
 
         if self._r_state == 0 and self._w_state == 0:
             self._w_state += 1
@@ -122,7 +122,7 @@ class _RWLockCore:
         try:
             self._owning.remove((me, lock_type))
         except ValueError:
-            raise RuntimeError("cannot release an un-acquired lock")
+            raise RuntimeError('Cannot release an un-acquired lock')
         if lock_type == self._RL:
             self._r_state -= 1
         else:
@@ -193,7 +193,7 @@ class _ReaderLock(_ContextManagerMixin):
 
     def __repr__(self):
         status = 'locked' if self._lock._r_state > 0 else 'unlocked'
-        return "<ReaderLock: [{}]>".format(status)
+        return '<ReaderLock: [{}]>'.format(status)
 
 
 class _WriterLock(_ContextManagerMixin):
@@ -213,11 +213,10 @@ class _WriterLock(_ContextManagerMixin):
 
     def __repr__(self):
         status = 'locked' if self._lock._w_state > 0 else 'unlocked'
-        return "<WriterLock: [{}]>".format(status)
+        return '<WriterLock: [{}]>'.format(status)
 
 
 class RWLock:
-    # Doc shamelessly ripped off from Java
     """A RWLock maintains a pair of associated locks, one for read-only
     operations and one for writing. The read lock may be held simultaneously
     by multiple reader tasks, so long as there are no writers. The write
