@@ -7,3 +7,4 @@ pyroma==2.4
 pytest-cov==2.6.0
 pytest==4.0.1
 uvloop==0.11.3
+mypy==0.650

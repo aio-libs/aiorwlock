@@ -5,7 +5,11 @@ language: python
 python:
 - 3.5.3
 - 3.6
-- 3.7
+
+matrix:
+  include:
+    - python: '3.7'
+      env: MYPY="y"
 
 install:
     - pip install -r requirements-dev.txt
@@ -13,6 +17,10 @@ install:
     - pip install codecov
 
 script:
+  - |
+      if [ "$MYPY" = "y" ]; then
+          make mypy
+      fi;
   - make cov
 
 after_success:

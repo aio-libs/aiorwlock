@@ -1,6 +1,7 @@
 import asyncio
 import gc
 
+import uvloop
 import pytest
 
 
@@ -9,24 +10,22 @@ def fast_track(request):
     return request.param
 
 
-def pytest_generate_tests(metafunc):
-    if 'loop_type' in metafunc.fixturenames:
-        loop_type = ['asyncio', 'uvloop']
-        metafunc.parametrize('loop_type', loop_type)
-
-
 @pytest.fixture(scope='session', params=[True, False],
                 ids=['debug:true', 'debug:false'])
 def debug(request):
     return request.param
 
 
-@pytest.yield_fixture
+@pytest.fixture(scope='module', params=['pyloop', 'uvloop'])
+def loop_type(request):
+    return request.param
+
+
+@pytest.fixture
 def loop(request, loop_type, debug):
     # old_loop = asyncio.get_event_loop()
     asyncio.set_event_loop(None)
     if loop_type == 'uvloop':
-        import uvloop
         loop = uvloop.new_event_loop()
     else:
         loop = asyncio.new_event_loop()
