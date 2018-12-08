@@ -20,8 +20,7 @@ bandit:
 	bandit -r ./aiorwlock
 
 cov cover coverage: flake checkrst pyroma bandit
-# disable tests coverage (--cov=tests) due error in coverage tool
-	pytest -sv --cov=aiorwlock --cov-report=term --cov-report=html
+	pytest -sv --cov=aiorwlock --cov-report=term --cov-report=html ./tests
 	@echo "open file://`pwd`/htmlcov/index.html"
 
 clean:
