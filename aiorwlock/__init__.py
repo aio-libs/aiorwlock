@@ -2,7 +2,7 @@ import asyncio
 import sys
 
 from collections import deque
-from asyncio import Task, Future
+from asyncio import Task, Future  # noqa
 from typing import Any, List, Tuple, Optional, Callable  # noqa
 
 try:

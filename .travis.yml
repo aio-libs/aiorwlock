@@ -29,10 +29,10 @@ after_success:
 
 deploy:
   provider: pypi
-  user: andrew.svetlov
+  user: aio-libs-bot
   password:
-    secure: "Pl5Ra/KR0OqE27w8leDsIMzS/K65IEQCtwvuNTrXr6KHZT4hgAwtMS+Up22Ow8J5858nLHzJ0OQKIWPJ8dirZkc8E3fNkFFImK4y4aGkzuDVhQG5Y+Mmj+7UglIEu1/3i/MPmfCftUTuLsUyleYaq/MdGF6zvDoM+H0+DSYgxMA="
-  distributions: "sdist bdist_wheel"
+    secure: "xrYq78Jpw3rfHNc+LDS3IXi0cDZukAgaDuJ+xbkRLwijeSTR8LA9ZFU0OYK2X/+YBrtegBKB15ZkEkjfN702MNaR3wqHGxs+EWVcZc6Yy/lipGTjfGJEiDcIF+wKzFR5wqSL8Hrj66cDnY7dK07jfHc5KswTUizmiYLqGnAJGI+zQVnHCIv6W6iC06LY9eLcBXi514toMN9ku+anNBtzQ14gjW4N0ccCGKaeeAzPsvrMcnpjUh1xOhFG/aTBFpEPLbJ7ZUS87kPabf9/WsLS0tEW8ggSgAZT9GTljbe4I8/Vg14EJCQ4KSpcQ8z9gsf1AAB8XEYIN0jx2ub/c6gYwlazoOln6EE+WbNTHqEx0SiCkHrL7gIOoXEWYG/xPGraYQIi1xD6Yl6nmi0bixUQOgsYGKYb131ycyMJjsHGTdRHnqnja0ev9VIWr5zBu1IKtE/46QRMFYpg5PPAVX211wVsvZwH8plueIA1WRfzwZQoAiZDhQ4Wusql6jFVleeqKy4UldYy3SFoFL0qzlwvm/cx7dkP97NoW8Xtoizz0CJt/BeFGViCaRYbi3Z45rjSaeVWhfcwnIaRdd3FgadxWhJXEohgnoafwCteNz3NGU0lbxBfuOfYEOFgcwdYMzF0KjsGwbfekdAa/ZcLxnuvmJXFXPo/YrWusVw4nBR/9pU="
+  distributions: sdist bdist_wheel
   on:
     tags: true
     all_branches: true
