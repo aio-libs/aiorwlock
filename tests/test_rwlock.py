@@ -90,7 +90,8 @@ async def test_repr(loop):
     assert 'WriterLock: [unlocked]' in rwlock.__repr__()
 
 
-def test_release_unlocked(loop):
+@pytest.mark.run_loop
+async def test_release_unlocked(loop):
     rwlock = RWLock(loop=loop)
     with pytest.raises(RuntimeError):
         rwlock.reader_lock.release()
@@ -480,3 +481,39 @@ def test_current_task(loop):
 
     with pytest.raises(RuntimeError):
         current_task()
+
+
+@pytest.mark.run_loop
+async def test_read_context_manager(loop, fast_track):
+    rwlock = RWLock(loop=loop, fast=fast_track)
+    reader = rwlock.reader_lock
+    assert not reader.locked
+    async with reader:
+        assert reader.locked
+
+
+@pytest.mark.run_loop
+async def test_write_context_manager(loop, fast_track):
+    rwlock = RWLock(loop=loop, fast=fast_track)
+    writer = rwlock.writer_lock
+    assert not writer.locked
+    async with writer:
+        assert writer.locked
+
+
+@pytest.mark.run_loop
+async def test_await_read_lock(loop, fast_track):
+    rwlock = RWLock(loop=loop, fast=fast_track)
+    reader = rwlock.reader_lock
+    assert not reader.locked
+    async with reader:
+        assert reader.locked
+
+
+@pytest.mark.run_loop
+async def test_await_write_lock(loop, fast_track):
+    rwlock = RWLock(loop=loop, fast=fast_track)
+    writer = rwlock.writer_lock
+    assert not writer.locked
+    async with writer:
+        assert writer.locked
