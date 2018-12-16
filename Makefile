@@ -2,7 +2,7 @@
 
 
 flake:
-	flake8 aiorwlock tests examples
+	flake8 aiorwlock tests examples setup.py
 
 test: flake
 	pytest -s

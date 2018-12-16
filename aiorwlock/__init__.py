@@ -271,5 +271,6 @@ class RWLock:
     writer_lock = writer
 
     def __repr__(self) -> str:
-        return '<RWLock: {} {}>'.format(self.reader_lock.__repr__(),
-                                        self.writer_lock.__repr__())
+        rl = self.reader_lock.__repr__()
+        wl = self.writer_lock.__repr__()
+        return '<RWLock: {} {}>'.format(rl, wl)

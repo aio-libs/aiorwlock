@@ -8,7 +8,7 @@ install_requires = []
 
 
 if sys.version_info < (3, 5, 3):
-    raise RuntimeError("aiorwlock requires Python 3.5.3+")
+    raise RuntimeError('aiorwlock requires Python 3.5.3+')
 
 
 def read(f):
@@ -26,6 +26,7 @@ def read_version():
                 return match.group(1)
         else:
             raise RuntimeError('Cannot find version in aiorwlock/__init__.py')
+
 
 classifiers = [
     'License :: OSI Approved :: Apache Software License',
