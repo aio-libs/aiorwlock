@@ -15,7 +15,7 @@ Loop = asyncio.AbstractEventLoop
 OptLoop = Optional[Loop]
 
 
-__version__ = '0.6.0'
+__version__ = '0.6.1a1'
 __all__ = ['RWLock']
 
 PY_35 = sys.version_info >= (3, 5, 3)
