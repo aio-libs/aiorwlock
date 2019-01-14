@@ -20,7 +20,7 @@ bandit:
 	bandit -r ./aiorwlock
 
 mypy:
-	mypy aiorwlock --ignore-missing-imports --disallow-untyped-calls --no-site-packages --strict
+	mypy aiorwlock --disallow-untyped-calls --strict
 
 cov cover coverage: flake checkrst pyroma bandit
 	pytest -sv --cov=aiorwlock --cov-report=term --cov-report=html ./tests
