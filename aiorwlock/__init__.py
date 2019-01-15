@@ -1,9 +1,8 @@
 import asyncio
-import sys
 
 from collections import deque
 from asyncio import Task, Future  # noqa
-from typing import Any, List, Tuple, Optional, Callable  # noqa
+from typing import Any, List, Tuple, Optional  # noqa
 
 try:
     from typing import Deque
@@ -17,8 +16,6 @@ OptLoop = Optional[Loop]
 
 __version__ = '0.6.1a1'
 __all__ = ['RWLock']
-
-PY_35 = sys.version_info >= (3, 5, 3)
 
 
 def current_task(loop: OptLoop = None) -> 'Task[Any]':
