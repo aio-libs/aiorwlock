@@ -25,27 +25,33 @@ being exclusively locked and there is little, if any increase in concurrency.
 Implementation is almost direct port from this patch_.
 
 
-Example with async def
-----------------------
+Example
+-------
 
 Requires Python 3.5+
 
 .. code:: python
 
-    import asyncio
-    import aiorwlock
-    loop = asyncio.get_event_loop()
+   import asyncio
+   import aiorwlock
 
 
-    async def go():
-        rwlock = aiorwlock.RWLock(loop=loop)
-        async with rwlock.writer:
-            # or same way you can acquire reader lock
-            # async with rwlock.reader: pass
-            print("inside writer")
-            await asyncio.sleep(0.1, loop=loop)
+   async def go():
+       rwlock = aiorwlock.RWLock()
 
-    loop.run_until_complete(go())
+       # acquire reader lock, multiple coroutines allowed to hold the lock
+       async with rwlock.reader_lock:
+           print('inside reader lock')
+           await asyncio.sleep(0.1)
+
+       # acquire writer lock, only one coroutine can hold the lock
+       async with rwlock.writer_lock:
+           print('inside writer lock')
+           await asyncio.sleep(0.1)
+
+
+   loop = asyncio.get_event_loop()
+   loop.run_until_complete(go())
 
 
 Fast path
