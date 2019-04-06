@@ -19,7 +19,7 @@ def should_fail(timeout, loop):
         handle.cancel()
         return
     else:
-        assert False, ('Inner task expected to be cancelled', task)
+        raise AssertionError('Inner task expected to be cancelled', task)
 
 
 @pytest.mark.run_loop
