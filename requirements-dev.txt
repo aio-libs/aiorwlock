@@ -1,10 +1,10 @@
 -e .
 bandit==1.5.1
-flake8-bugbear==18.8.0
+flake8-bugbear==19.3.0
 flake8-quotes==1.0.0
 flake8==3.7.7
 pyroma==2.4
 pytest-cov==2.6.1
-pytest==4.3.0
-uvloop==0.12.1
+pytest==4.4.0
+uvloop==0.12.2
 mypy==0.670
