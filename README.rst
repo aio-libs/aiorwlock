@@ -70,6 +70,12 @@ statements) inside  locked code  you may want  to use  `fast=True` for
 minor speedup.
 
 
+TLA+ Specification
+------------------
+
+TLA+ specification of ``aiorwlock`` provided in this repository.
+
+
 License
 -------
 
