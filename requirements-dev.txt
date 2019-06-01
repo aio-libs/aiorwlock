@@ -5,6 +5,6 @@ flake8-quotes==2.0.1
 flake8==3.7.7
 pyroma==2.5
 pytest-cov==2.7.1
-pytest==4.5.0
+pytest==4.6.0
 uvloop==0.12.2
 mypy==0.701
