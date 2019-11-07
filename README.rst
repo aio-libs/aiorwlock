@@ -28,7 +28,7 @@ Implementation is almost direct port from this patch_.
 Example
 -------
 
-Requires Python 3.5+
+Requires Python 3.5.3+
 
 .. code:: python
 
@@ -82,5 +82,5 @@ License
 ``aiorwlock`` is offered under the Apache 2 license.
 
 
-.. _asyncio: http://docs.python.org/3.4/library/asyncio.html
+.. _asyncio: http://docs.python.org/3.8/library/asyncio.html
 .. _patch: http://bugs.python.org/issue8800
