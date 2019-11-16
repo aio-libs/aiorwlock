@@ -23,7 +23,7 @@ def should_fail(timeout, loop):
         pytest.fail(msg)
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_get_write_then_read(loop):
     rwlock = RWLock(loop=loop)
 
@@ -38,7 +38,7 @@ async def test_get_write_then_read(loop):
             assert rl.locked
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_get_write_then_read_and_write_again(loop):
     rwlock = RWLock(loop=loop)
     rl = rwlock.reader
@@ -67,7 +67,7 @@ async def test_get_write_then_read_and_write_again(loop):
             assert rl.locked
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_writers_deadlock(loop):
     rwlock = RWLock(loop=loop)
     rl = rwlock.reader
@@ -105,7 +105,7 @@ async def test_writers_deadlock(loop):
     assert not wl.locked
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_readers_cancel(loop):
     rwlock = RWLock(loop=loop)
     rl = rwlock.reader

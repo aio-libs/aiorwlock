@@ -70,7 +70,7 @@ def test_ctor_noloop_writer(loop):
     assert rwlock._lock._loop is loop
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_repr(loop):
     rwlock = RWLock(loop=loop)
     assert 'RWLock' in rwlock.__repr__()
@@ -90,14 +90,14 @@ async def test_repr(loop):
     assert 'WriterLock: [unlocked]' in rwlock.__repr__()
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_release_unlocked(loop):
     rwlock = RWLock(loop=loop)
     with pytest.raises(RuntimeError):
         rwlock.reader_lock.release()
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_many_readers(loop, fast_track):
     rwlock = RWLock(loop=loop, fast=fast_track)
     N = 5
@@ -119,7 +119,7 @@ async def test_many_readers(loop, fast_track):
     assert max(nlocked) > 1
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_read_upgrade_write_release(loop):
     rwlock = RWLock(loop=loop)
     await rwlock.writer_lock.acquire()
@@ -143,7 +143,7 @@ async def test_read_upgrade_write_release(loop):
     rwlock.reader_lock.release()
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_reader_recursion(loop, fast_track):
 
     rwlock = RWLock(loop=loop, fast=fast_track)
@@ -170,7 +170,7 @@ async def test_reader_recursion(loop, fast_track):
     assert max(nlocked) > 1
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_writer_recursion(loop, fast_track):
     rwlock = RWLock(loop=loop, fast=fast_track)
     N = 5
@@ -196,7 +196,7 @@ async def test_writer_recursion(loop, fast_track):
     assert max(nlocked) == 1
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_writer_then_reader_recursion(loop, fast_track):
     rwlock = RWLock(loop=loop, fast=fast_track)
     N = 5
@@ -222,7 +222,7 @@ async def test_writer_then_reader_recursion(loop, fast_track):
     assert max(nlocked) == 1
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_writer_recursion_fail(loop):
     rwlock = RWLock(loop=loop)
     N = 5
@@ -241,7 +241,7 @@ async def test_writer_recursion_fail(loop):
     assert len(locked) == N
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_readers_writers(loop, fast_track):
     rwlock = RWLock(loop=loop, fast=fast_track)
     N = 5
@@ -291,7 +291,7 @@ async def test_readers_writers(loop, fast_track):
             assert w == 0
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_writer_success(loop):
     # Verify that a writer can get access
     rwlock = RWLock(loop=loop)
@@ -337,7 +337,7 @@ async def test_writer_success(loop):
     # print('>>>>>>>>>>>', writes, reads)
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_writer_success_fast(loop):
     # Verify that a writer can get access
     rwlock = RWLock(loop=loop, fast=True)
@@ -384,7 +384,7 @@ async def test_writer_success_fast(loop):
     # print('>>>>>>>>>>>', writes, reads)
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_writer_success_with_statement(loop):
     # Verify that a writer can get access
     rwlock = RWLock(loop=loop)
@@ -437,7 +437,7 @@ def test_raise_error_on_with_for_writer_lock(loop, fast_track):
             pass
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_read_locked(loop, fast_track):
     rwlock = RWLock(loop=loop, fast=fast_track)
     assert not rwlock.reader_lock.locked
@@ -445,7 +445,7 @@ async def test_read_locked(loop, fast_track):
         assert rwlock.reader_lock.locked
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_write_locked(loop, fast_track):
     rwlock = RWLock(loop=loop, fast=fast_track)
     assert not rwlock.writer_lock.locked
@@ -453,7 +453,7 @@ async def test_write_locked(loop, fast_track):
         assert rwlock.writer_lock.locked
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_write_read_lock_multiple_tasks(loop, fast_track):
     rwlock = RWLock(loop=loop, fast=fast_track)
     rl = rwlock.reader
@@ -483,7 +483,7 @@ def test_current_task(loop):
         current_task()
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_read_context_manager(loop, fast_track):
     rwlock = RWLock(loop=loop, fast=fast_track)
     reader = rwlock.reader_lock
@@ -492,7 +492,7 @@ async def test_read_context_manager(loop, fast_track):
         assert reader.locked
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_write_context_manager(loop, fast_track):
     rwlock = RWLock(loop=loop, fast=fast_track)
     writer = rwlock.writer_lock
@@ -501,7 +501,7 @@ async def test_write_context_manager(loop, fast_track):
         assert writer.locked
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_await_read_lock(loop, fast_track):
     rwlock = RWLock(loop=loop, fast=fast_track)
     reader = rwlock.reader_lock
@@ -510,7 +510,7 @@ async def test_await_read_lock(loop, fast_track):
         assert reader.locked
 
 
-@pytest.mark.run_loop
+@pytest.mark.asyncio
 async def test_await_write_lock(loop, fast_track):
     rwlock = RWLock(loop=loop, fast=fast_track)
     writer = rwlock.writer_lock
