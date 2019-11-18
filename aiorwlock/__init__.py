@@ -1,20 +1,15 @@
 import asyncio
 
 from collections import deque
-from asyncio import Task, Future  # noqa
-from typing import Any, List, Tuple, Optional  # noqa
-
-try:
-    from typing import Deque
-except ImportError:
-    Deque = deque  # type: ignore
+from asyncio import Task, Future
+from typing import Any, Deque, List, Tuple, Optional
 
 
 Loop = asyncio.AbstractEventLoop
 OptLoop = Optional[Loop]
 
 
-__version__ = '0.6.1a1'
+__version__ = '0.7.0a1'
 __all__ = ['RWLock']
 
 
