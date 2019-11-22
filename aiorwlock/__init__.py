@@ -19,7 +19,7 @@ __all__ = ['RWLock']
 
 
 def current_task(loop: OptLoop = None) -> 'Task[Any]':
-    _loop = loop or asyncio.get_event_loop()  # type: Loop
+    _loop: Loop = loop or asyncio.get_event_loop()
     if hasattr(asyncio, 'current_task'):
         t = asyncio.current_task(loop=_loop)
     else:
@@ -39,13 +39,13 @@ class _RWLockCore:
 
     def __init__(self, fast: bool, loop: OptLoop):
         self._do_yield = not fast
-        self._loop = loop or asyncio.get_event_loop()  # type: Loop
-        self._read_waiters = deque()  # type: Deque[Future[None]]
-        self._write_waiters = deque()  # type: Deque[Future[None]]
-        self._r_state = 0  # type: int
-        self._w_state = 0  # type: int
+        self._loop: Loop = loop or asyncio.get_event_loop()
+        self._read_waiters: Deque[Future[None]] = deque()
+        self._write_waiters: Deque[Future[None]] = deque()
+        self._r_state: int = 0
+        self._w_state: int = 0
         # tasks will be few, so a list is not inefficient
-        self._owning = []  # type: List[Tuple[Task[Any], int]]
+        self._owning: List[Tuple[Task[Any], int]] = []
 
     @property
     def read_locked(self) -> bool:
@@ -248,7 +248,7 @@ class RWLock:
     core = _RWLockCore
 
     def __init__(self, *, fast: bool = False, loop: OptLoop = None) -> None:
-        self._loop = loop or asyncio.get_event_loop()  # type: Loop
+        self._loop: Loop = loop or asyncio.get_event_loop()
         core = self.core(fast, self._loop)
         self._reader_lock = _ReaderLock(core)
         self._writer_lock = _WriterLock(core)
