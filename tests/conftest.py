@@ -22,7 +22,7 @@ def loop_type(request):
 
 
 @pytest.fixture
-def loop(request, loop_type, debug):
+def event_loop(request, loop_type, debug):
     # old_loop = asyncio.get_event_loop()
     asyncio.set_event_loop(None)
     if loop_type == 'uvloop':
@@ -39,30 +39,6 @@ def loop(request, loop_type, debug):
     gc.collect()
 
 
-@pytest.mark.tryfirst
-def pytest_pycollect_makeitem(collector, name, obj):
-    if collector.funcnamefilter(name):
-        item = pytest.Function(name, parent=collector)
-        if 'run_loop' in item.keywords:
-            return list(collector._genfunctions(name, obj))
-
-
-@pytest.mark.tryfirst
-def pytest_pyfunc_call(pyfuncitem):
-    """
-    Run asyncio marked test functions in an event loop instead of a normal
-    function call.
-    """
-    if 'run_loop' in pyfuncitem.keywords:
-        funcargs = pyfuncitem.funcargs
-        loop = funcargs['loop']
-        testargs = {arg: funcargs[arg]
-                    for arg in pyfuncitem._fixtureinfo.argnames}
-        loop.run_until_complete(pyfuncitem.obj(**testargs))
-        return True
-
-
-def pytest_runtest_setup(item):
-    if 'run_loop' in item.keywords and 'loop' not in item.fixturenames:
-        # inject an event loop fixture for all async tests
-        item.fixturenames.append('loop')
+@pytest.fixture
+def loop(event_loop):
+    return event_loop
