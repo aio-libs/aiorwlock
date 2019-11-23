@@ -59,3 +59,9 @@ target/
 
 .coverage.*
 coverage
+
+.DS_Store
+.mypy_cache/
+cscope.files
+cscope.out
+tags
