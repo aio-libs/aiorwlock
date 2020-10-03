@@ -1,8 +1,20 @@
 # Some simple testing tasks (sorry, UNIX only).
 
+FILES := aiorwlock tests examples setup.py
+
 
 flake:
-	flake8 aiorwlock tests examples setup.py
+	flake8 $(FILES)
+
+fmt:
+	isort ${FILES}
+	black -S -l 79 ${FILES}
+
+lint: checkrst bandit
+	isort --check-only --diff ${FILES}
+	black -S -l 79 --check $(FILES)
+	mypy --show-error-codes --disallow-untyped-calls --strict aiorwlock
+	flake8 $(FILES)
 
 test: flake
 	pytest -s

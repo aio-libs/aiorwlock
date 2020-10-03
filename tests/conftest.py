@@ -1,8 +1,8 @@
 import asyncio
 import gc
 
-import uvloop
 import pytest
+import uvloop
 
 
 @pytest.fixture(scope='module', params=[True, False], ids=['fast', 'slow'])
@@ -10,8 +10,9 @@ def fast_track(request):
     return request.param
 
 
-@pytest.fixture(scope='session', params=[True, False],
-                ids=['debug:true', 'debug:false'])
+@pytest.fixture(
+    scope='session', params=[True, False], ids=['debug:true', 'debug:false']
+)
 def debug(request):
     return request.param
 
