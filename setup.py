@@ -1,14 +1,9 @@
 import os
 import re
-import sys
 from setuptools import setup
 
 
 install_requires = []
-
-
-if sys.version_info < (3, 6, 0):
-    raise RuntimeError('aiorwlock requires Python 3.6.0+')
 
 
 def read(f):
@@ -17,8 +12,9 @@ def read(f):
 
 def read_version():
     regexp = re.compile(r"^__version__\W*=\W*'([\d.abrc]+)'")
-    init_py = os.path.join(os.path.dirname(__file__),
-                           'aiorwlock', '__init__.py')
+    init_py = os.path.join(
+        os.path.dirname(__file__), 'aiorwlock', '__init__.py'
+    )
     with open(init_py) as f:
         for line in f:
             match = regexp.match(line)
@@ -40,20 +36,29 @@ classifiers = [
     'Framework :: AsyncIO',
 ]
 
+project_urls = {
+    'Website': 'https://github.com/aio-libs/aiorwlock',
+    'Issues': 'https://github.com/aio-libs/aiorwlock/issues',
+}
 
-setup(name='aiorwlock',
-      version=read_version(),
-      description=('Read write lock for asyncio.'),
-      long_description='\n\n'.join((read('README.rst'), read('CHANGES.rst'))),
-      classifiers=classifiers,
-      platforms=['POSIX'],
-      author='Nikolay Novik',
-      author_email='nickolainovik@gmail.com',
-      url='https://github.com/aio-libs/aiorwlock',
-      download_url='https://pypi.python.org/pypi/aiorwlock',
-      license='Apache 2',
-      packages=['aiorwlock'],
-      install_requires=install_requires,
-      keywords=['aiorwlock', 'lock', 'asyncio'],
-      zip_safe=True,
-      include_package_data=True)
+
+setup(
+    name='aiorwlock',
+    version=read_version(),
+    description=('Read write lock for asyncio.'),
+    long_description='\n\n'.join((read('README.rst'), read('CHANGES.rst'))),
+    classifiers=classifiers,
+    platforms=['POSIX'],
+    author='Nikolay Novik',
+    author_email='nickolainovik@gmail.com',
+    url='https://github.com/aio-libs/aiorwlock',
+    download_url='https://pypi.python.org/pypi/aiorwlock',
+    license='Apache 2',
+    packages=['aiorwlock'],
+    install_requires=install_requires,
+    keywords=['aiorwlock', 'lock', 'asyncio'],
+    zip_safe=True,
+    project_urls=project_urls,
+    python_requires='>=3.6.0',
+    include_package_data=True,
+)
