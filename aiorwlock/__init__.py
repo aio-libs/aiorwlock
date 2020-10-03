@@ -1,11 +1,13 @@
 import asyncio
-from asyncio import Future, Task
 from collections import deque
 from typing import Any, Deque, List, Optional, Tuple
 
 Loop = asyncio.AbstractEventLoop
 OptLoop = Optional[Loop]
 
+# silence LGTM service alerts
+Future = asyncio.Future
+Task = asyncio.Task
 
 __version__ = '0.7.0a1'
 __all__ = ['RWLock']
@@ -16,6 +18,7 @@ def current_task(loop: OptLoop = None) -> 'Task[Any]':
     if hasattr(asyncio, 'current_task'):
         t = asyncio.current_task(loop=_loop)
     else:
+        # remove once python 3.6 deprecated
         t = asyncio.Task.current_task(loop=_loop)
     if t is None:
         raise RuntimeError('Loop is not running')
