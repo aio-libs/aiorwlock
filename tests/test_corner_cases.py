@@ -1,9 +1,9 @@
-import pytest
 import asyncio
 import contextlib
 
-from aiorwlock import RWLock, current_task
+import pytest
 
+from aiorwlock import RWLock, current_task
 
 ensure_future = asyncio.ensure_future
 
@@ -49,7 +49,7 @@ async def test_get_write_then_read_and_write_again(loop):
 
     async def get_write_lock():
         await f
-        with should_fail(.1, loop):
+        with should_fail(0.1, loop):
             async with wl:
                 assert wl.locked
                 writes.append('should not be here')
@@ -87,7 +87,7 @@ async def test_writers_deadlock(loop):
     async def coro():
         async with wl:
             assert wl.locked
-            await asyncio.sleep(.2, loop)
+            await asyncio.sleep(0.2, loop)
 
     async with rl:
         assert rl.locked

@@ -1,9 +1,7 @@
 import asyncio
-
+from asyncio import Future, Task
 from collections import deque
-from asyncio import Task, Future
-from typing import Any, Deque, List, Tuple, Optional
-
+from typing import Any, Deque, List, Optional, Tuple
 
 Loop = asyncio.AbstractEventLoop
 OptLoop = Optional[Loop]
@@ -61,8 +59,11 @@ class _RWLockCore:
                 await asyncio.sleep(0.0, loop=self._loop)
             return True
 
-        if (not self._write_waiters and
-                self._r_state >= 0 and self._w_state == 0):
+        if (
+            not self._write_waiters
+            and self._r_state >= 0
+            and self._w_state == 0
+        ):
             self._r_state += 1
             self._owning.append((me, self._RL))
             if self._do_yield:
@@ -166,10 +167,10 @@ class _RWLockCore:
 
 
 class _ContextManagerMixin:
-
     def __enter__(self) -> None:
         raise RuntimeError(
-            '"await" should be used as context manager expression')
+            '"await" should be used as context manager expression'
+        )
 
     def __exit__(self, *args: Any) -> None:
         # This must exist because __enter__ exists, even though that
@@ -194,7 +195,6 @@ class _ContextManagerMixin:
 
 # Lock objects to access the _RWLockCore in reader or writer mode
 class _ReaderLock(_ContextManagerMixin):
-
     def __init__(self, lock: _RWLockCore) -> None:
         self._lock = lock
 
@@ -214,7 +214,6 @@ class _ReaderLock(_ContextManagerMixin):
 
 
 class _WriterLock(_ContextManagerMixin):
-
     def __init__(self, lock: _RWLockCore):
         self._lock = lock
 

@@ -1,7 +1,8 @@
 import asyncio
 
-from aiorwlock import RWLock, current_task
 import pytest
+
+from aiorwlock import RWLock, current_task
 
 
 class Bunch(object):
@@ -279,7 +280,10 @@ async def test_readers_writers(loop, fast_track):
     await b1.wait_for_finished()
     await b2.wait_for_finished()
 
-    r, w, = zip(*nlocked)
+    (
+        r,
+        w,
+    ) = zip(*nlocked)
 
     assert max(r) > 1
     assert max(w) == 1
