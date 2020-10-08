@@ -4,7 +4,7 @@ black==20.8b1
 flake8-bugbear==20.1.4
 flake8-quotes==3.2.0
 flake8==3.8.4
-isort==5.5.4
+isort==5.5.5
 mypy==0.782
 pyroma==2.6
 pytest-asyncio==0.14.0
