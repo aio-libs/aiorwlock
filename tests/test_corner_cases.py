@@ -129,3 +129,24 @@ async def test_readers_cancel(loop):
     assert task_c.done()
     assert not rl.locked
     assert not wl.locked
+
+
+@pytest.mark.asyncio
+async def test_canceled_inside_acquire(loop):
+    rwlock = RWLock(loop=loop)
+    rl = rwlock.reader
+
+    async def coro(lock):
+        async with lock:
+            pass
+
+    task = ensure_future(coro(rl), loop=loop)
+    await asyncio.sleep(0)
+    task.cancel()
+
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
+
+    assert not rl.locked
