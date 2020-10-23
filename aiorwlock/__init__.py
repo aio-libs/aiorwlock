@@ -14,7 +14,7 @@ __version__ = '1.0.0a1'
 __all__ = ('RWLock',)
 
 
-def current_task(loop: OptLoop = None) -> 'Task[Any]':
+def _current_task(loop: OptLoop = None) -> 'Task[Any]':
     _loop: Loop = loop or asyncio.get_event_loop()
     if hasattr(asyncio, 'current_task'):
         t = asyncio.current_task(loop=_loop)
@@ -63,7 +63,7 @@ class _RWLockCore:
 
     # Acquire the lock in read mode.
     async def acquire_read(self) -> bool:
-        me = current_task(loop=self._loop)
+        me = _current_task(loop=self._loop)
 
         if (me, self._RL) in self._owning or (me, self._WL) in self._owning:
             self._r_state += 1
@@ -99,7 +99,7 @@ class _RWLockCore:
     # Acquire the lock in write mode.  A 'waiting' count is maintained,
     # ensuring that 'readers' will yield to writers.
     async def acquire_write(self) -> bool:
-        me = current_task(loop=self._loop)
+        me = _current_task(loop=self._loop)
 
         if (me, self._WL) in self._owning:
             self._w_state += 1
@@ -139,7 +139,7 @@ class _RWLockCore:
 
     def _release(self, lock_type: int) -> None:
         # assert lock_type in (self._RL, self._WL)
-        me = current_task(loop=self._loop)
+        me = _current_task(loop=self._loop)
         try:
             self._owning.remove((me, lock_type))
         except ValueError:

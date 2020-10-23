@@ -2,7 +2,7 @@ import asyncio
 
 import pytest
 
-from aiorwlock import RWLock, current_task
+from aiorwlock import RWLock, _current_task
 
 
 class Bunch(object):
@@ -24,7 +24,7 @@ class Bunch(object):
         self._futures = []
 
         async def task():
-            tid = current_task()
+            tid = _current_task()
             self.started.append(tid)
             try:
                 await f()
@@ -502,10 +502,10 @@ async def test_write_read_lock_multiple_tasks(loop, fast_track):
 
 def test_current_task(loop):
     with pytest.raises(RuntimeError):
-        current_task(loop)
+        _current_task(loop)
 
     with pytest.raises(RuntimeError):
-        current_task()
+        _current_task()
 
 
 @pytest.mark.asyncio
