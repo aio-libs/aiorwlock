@@ -32,10 +32,10 @@ jobs:
     - name: Cache PyPI
       uses: actions/cache@v2
       with:
-        key: pip-${{ hashFiles('requirements-dev.txt') }}
+        key: pip-lint-${{ hashFiles('requirements-dev.txt') }}
         path: ${{ steps.pip-cache.outputs.dir }}
         restore-keys: |
-            pip-
+            pip-lint-
     - name: Install dependencies
       uses: py-actions/py-dependency-install@v2
       with:
@@ -59,7 +59,7 @@ jobs:
     needs: lint
     strategy:
       matrix:
-        pyver: [3.6, 3.7, 3.8, 3.9]
+        pyver: [3.6, 3.7, 3.8, 3.9, pypy3]
       fail-fast: false
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -77,10 +77,10 @@ jobs:
     - name: Cache PyPI
       uses: actions/cache@v2
       with:
-        key: pip--${{ hashFiles('requirements-dev.txt') }}
+        key: pip-ci-${{ matrix.pyver }}-${{ hashFiles('requirements-dev.txt') }}
         path: ${{ steps.pip-cache.outputs.dir }}
         restore-keys: |
-            pip-
+            pip-ci-
     - name: Install dependencies
       uses: py-actions/py-dependency-install@v2
       with:
@@ -89,8 +89,7 @@ jobs:
       env:
         COLOR: 'yes'
       run: |
-        python -m pytest tests -vv
-        python -m coverage xml
+        make cov
     - name: Upload coverage
       uses: codecov/codecov-action@v1
       with:
