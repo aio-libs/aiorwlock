@@ -1,8 +1,18 @@
 Changes
 -------
 
-0.6.1 (YYYY-MM-DD)
+1.0.0 (2020-12-32)
 ^^^^^^^^^^^^^^^^^^
+
+* Fix a bug with cancelation during acquire #170 (thanks @romasku)
+
+* Deprecate passing explicit `loop` argument to `RWLock` constuctor
+
+* Deprecate creation of `RWLock` instance outside of async function context
+
+* Minimal supported version is Python 3.6
+
+* The library works with Python 3.8 and Python 3.9 seamlessly
 
 
 0.6.0 (2018-12-18)
