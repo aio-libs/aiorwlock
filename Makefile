@@ -10,7 +10,7 @@ fmt:
 	isort ${FILES}
 	black -S -l 79 ${FILES}
 
-lint: checkrst bandit
+lint: bandit pyroma
 	isort --check-only --diff ${FILES}
 	black -S -l 79 --check $(FILES)
 	mypy --show-error-codes --disallow-untyped-calls --strict aiorwlock
@@ -21,9 +21,6 @@ test: flake
 
 vtest:
 	pytest -v
-
-checkrst:
-	python setup.py check --restructuredtext
 
 pyroma:
 	pyroma -d .
