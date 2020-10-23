@@ -1,3 +1,0 @@
-Acknowledgements
-----------------
-Andrew Svetlov https://github.com/asvetlov
