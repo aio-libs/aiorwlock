@@ -11,7 +11,7 @@ Future = asyncio.Future
 Task = asyncio.Task
 
 __version__ = '1.0.0a1'
-__all__ = ['RWLock']
+__all__ = ('RWLock',)
 
 
 def current_task(loop: OptLoop = None) -> 'Task[Any]':
