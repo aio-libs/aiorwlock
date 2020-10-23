@@ -2,7 +2,10 @@ import asyncio
 import gc
 
 import pytest
-import uvloop
+try:
+    import uvloop
+except ImportError:
+    uvloop = None
 
 
 @pytest.fixture(scope='module', params=[True, False], ids=['fast', 'slow'])
@@ -26,7 +29,7 @@ def loop_type(request):
 def event_loop(request, loop_type, debug):
     # old_loop = asyncio.get_event_loop()
     asyncio.set_event_loop(None)
-    if loop_type == 'uvloop':
+    if loop_type == 'uvloop' and uvloop is not None:
         loop = uvloop.new_event_loop()
     else:
         loop = asyncio.new_event_loop()
