@@ -6,7 +6,7 @@ Changes
 
 * Fix a bug with cancelation during acquire #170 (thanks @romasku)
 
-* Deprecate passing explicit `loop` argument to `RWLock` constuctor
+* Deprecate passing explicit `loop` argument to `RWLock` constructor
 
 * Deprecate creation of `RWLock` instance outside of async function context
 
