@@ -8,13 +8,13 @@ from aiorwlock import RWLock, current_task
 class Bunch(object):
     """A bunch of Tasks. Port python threading tests"""
 
-    def __init__(self, f, n, wait_before_exit=False, loop=None):
+    def __init__(self, f, n, wait_before_exit=False):
         """
         Construct a bunch of `n` tasks running the same function `f`.
         If `wait_before_exit` is True, the tasks won't terminate until
         do_finish() is called.
         """
-        self._loop = loop or asyncio.get_event_loop()
+        self._loop = asyncio.get_event_loop()
         self.f = f
         self.n = n
         self.started = []
@@ -24,48 +24,67 @@ class Bunch(object):
         self._futures = []
 
         async def task():
-            tid = current_task(loop=self._loop)
+            tid = current_task()
             self.started.append(tid)
             try:
                 await f()
             finally:
                 self.finished.append(tid)
                 while not self._can_exit:
-                    await asyncio.sleep(0.01, loop=self._loop)
+                    await asyncio.sleep(0.01)
 
         for _ in range(n):
-            t = asyncio.Task(task(), loop=self._loop)
+            t = asyncio.Task(task())
             self._futures.append(t)
 
     async def wait_for_finished(self):
-        await asyncio.gather(*self._futures, loop=self._loop)
+        await asyncio.gather(*self._futures)
 
     def do_finish(self):
         self._can_exit = True
 
 
-async def _wait(loop=None):
-    _loop = loop or asyncio.get_event_loop()
-    await asyncio.sleep(0.01, loop=_loop)
+async def _wait():
+    await asyncio.sleep(0.01)
 
 
-def test_ctor_loop_reader(loop):
-    rwlock = RWLock(loop=loop).reader_lock
+def test_ctor_deprecated_implicit_not_running(loop):
+    with pytest.warns(DeprecationWarning):
+        RWLock()
+
+
+def test_ctor_deprecated_explicit_non_running(loop):
+    with pytest.warns(DeprecationWarning):
+        RWLock(loop=loop)
+
+
+@pytest.mark.asyncio
+async def test_ctor_loop_deprecated_arg(loop):
+    with pytest.warns(DeprecationWarning):
+        RWLock(loop=loop)
+
+
+@pytest.mark.asyncio
+async def test_ctor_loop_reader(loop):
+    rwlock = RWLock().reader_lock
     assert rwlock._lock._loop is loop
 
 
-def test_ctor_noloop_reader(loop):
+@pytest.mark.asyncio
+async def test_ctor_noloop_reader(loop):
     asyncio.set_event_loop(loop)
     rwlock = RWLock().reader_lock
     assert rwlock._lock._loop is loop
 
 
-def test_ctor_loop_writer(loop):
-    rwlock = RWLock(loop=loop).writer_lock
+@pytest.mark.asyncio
+async def test_ctor_loop_writer(loop):
+    rwlock = RWLock().writer_lock
     assert rwlock._lock._loop is loop
 
 
-def test_ctor_noloop_writer(loop):
+@pytest.mark.asyncio
+async def test_ctor_noloop_writer(loop):
     asyncio.set_event_loop(loop)
     rwlock = RWLock().writer_lock
     assert rwlock._lock._loop is loop
@@ -73,7 +92,7 @@ def test_ctor_noloop_writer(loop):
 
 @pytest.mark.asyncio
 async def test_repr(loop):
-    rwlock = RWLock(loop=loop)
+    rwlock = RWLock()
     assert 'RWLock' in rwlock.__repr__()
     assert 'WriterLock: [unlocked' in rwlock.__repr__()
     assert 'ReaderLock: [unlocked' in rwlock.__repr__()
@@ -93,14 +112,14 @@ async def test_repr(loop):
 
 @pytest.mark.asyncio
 async def test_release_unlocked(loop):
-    rwlock = RWLock(loop=loop)
+    rwlock = RWLock()
     with pytest.raises(RuntimeError):
         rwlock.reader_lock.release()
 
 
 @pytest.mark.asyncio
 async def test_many_readers(loop, fast_track):
-    rwlock = RWLock(loop=loop, fast=fast_track)
+    rwlock = RWLock(fast=fast_track)
     N = 5
     locked = []
     nlocked = []
@@ -109,20 +128,20 @@ async def test_many_readers(loop, fast_track):
         await rwlock.reader_lock.acquire()
         try:
             locked.append(1)
-            await _wait(loop=loop)
+            await _wait()
             nlocked.append(len(locked))
-            await _wait(loop=loop)
+            await _wait()
             locked.pop(-1)
         finally:
             rwlock.reader_lock.release()
 
-    await Bunch(f, N, loop=loop).wait_for_finished()
+    await Bunch(f, N).wait_for_finished()
     assert max(nlocked) > 1
 
 
 @pytest.mark.asyncio
 async def test_read_upgrade_write_release(loop):
-    rwlock = RWLock(loop=loop)
+    rwlock = RWLock()
     await rwlock.writer_lock.acquire()
     await rwlock.reader_lock.acquire()
     await rwlock.reader_lock.acquire()
@@ -147,7 +166,7 @@ async def test_read_upgrade_write_release(loop):
 @pytest.mark.asyncio
 async def test_reader_recursion(loop, fast_track):
 
-    rwlock = RWLock(loop=loop, fast=fast_track)
+    rwlock = RWLock(fast=fast_track)
     N = 5
     locked = []
     nlocked = []
@@ -158,22 +177,22 @@ async def test_reader_recursion(loop, fast_track):
             await rwlock.reader_lock.acquire()
             try:
                 locked.append(1)
-                await _wait(loop=loop)
+                await _wait()
                 nlocked.append(len(locked))
-                await _wait(loop=loop)
+                await _wait()
                 locked.pop(-1)
             finally:
                 rwlock.reader_lock.release()
         finally:
             rwlock.reader_lock.release()
 
-    await Bunch(f, N, loop=loop).wait_for_finished()
+    await Bunch(f, N).wait_for_finished()
     assert max(nlocked) > 1
 
 
 @pytest.mark.asyncio
 async def test_writer_recursion(loop, fast_track):
-    rwlock = RWLock(loop=loop, fast=fast_track)
+    rwlock = RWLock(fast=fast_track)
     N = 5
     locked = []
     nlocked = []
@@ -184,22 +203,22 @@ async def test_writer_recursion(loop, fast_track):
             await rwlock.writer_lock.acquire()
             try:
                 locked.append(1)
-                await _wait(loop=loop)
+                await _wait()
                 nlocked.append(len(locked))
-                await _wait(loop=loop)
+                await _wait()
                 locked.pop(-1)
             finally:
                 rwlock.writer_lock.release()
         finally:
             rwlock.writer_lock.release()
 
-    await Bunch(f, N, loop=loop).wait_for_finished()
+    await Bunch(f, N).wait_for_finished()
     assert max(nlocked) == 1
 
 
 @pytest.mark.asyncio
 async def test_writer_then_reader_recursion(loop, fast_track):
-    rwlock = RWLock(loop=loop, fast=fast_track)
+    rwlock = RWLock(fast=fast_track)
     N = 5
     locked = []
     nlocked = []
@@ -210,22 +229,22 @@ async def test_writer_then_reader_recursion(loop, fast_track):
             await rwlock.reader_lock.acquire()
             try:
                 locked.append(1)
-                await _wait(loop=loop)
+                await _wait()
                 nlocked.append(len(locked))
-                await _wait(loop=loop)
+                await _wait()
                 locked.pop(-1)
             finally:
                 rwlock.reader_lock.release()
         finally:
             rwlock.writer_lock.release()
 
-    await Bunch(f, N, loop=loop).wait_for_finished()
+    await Bunch(f, N).wait_for_finished()
     assert max(nlocked) == 1
 
 
 @pytest.mark.asyncio
 async def test_writer_recursion_fail(loop):
-    rwlock = RWLock(loop=loop)
+    rwlock = RWLock()
     N = 5
     locked = []
 
@@ -238,13 +257,13 @@ async def test_writer_recursion_fail(loop):
         finally:
             rwlock.reader_lock.release()
 
-    await Bunch(f, N, loop=loop).wait_for_finished()
+    await Bunch(f, N).wait_for_finished()
     assert len(locked) == N
 
 
 @pytest.mark.asyncio
 async def test_readers_writers(loop, fast_track):
-    rwlock = RWLock(loop=loop, fast=fast_track)
+    rwlock = RWLock(fast=fast_track)
     N = 5
     rlocked = []
     wlocked = []
@@ -254,9 +273,9 @@ async def test_readers_writers(loop, fast_track):
         await rwlock.reader_lock.acquire()
         try:
             rlocked.append(1)
-            await _wait(loop=loop)
+            await _wait()
             nlocked.append((len(rlocked), len(wlocked)))
-            await _wait(loop=loop)
+            await _wait()
             rlocked.pop(-1)
         finally:
             rwlock.reader_lock.release()
@@ -265,17 +284,17 @@ async def test_readers_writers(loop, fast_track):
         await rwlock.writer_lock.acquire()
         try:
             wlocked.append(1)
-            await _wait(loop=loop)
+            await _wait()
             nlocked.append((len(rlocked), len(wlocked)))
-            await _wait(loop=loop)
+            await _wait()
             wlocked.pop(-1)
         finally:
             rwlock.writer_lock.release()
 
-    b1 = Bunch(r, N, loop=loop)
-    b2 = Bunch(w, N, loop=loop)
+    b1 = Bunch(r, N)
+    b2 = Bunch(w, N)
 
-    await asyncio.sleep(0.0001, loop=loop)
+    await asyncio.sleep(0.0001)
 
     await b1.wait_for_finished()
     await b2.wait_for_finished()
@@ -298,7 +317,7 @@ async def test_readers_writers(loop, fast_track):
 @pytest.mark.asyncio
 async def test_writer_success(loop):
     # Verify that a writer can get access
-    rwlock = RWLock(loop=loop)
+    rwlock = RWLock()
     N = 5
     reads = 0
     writes = 0
@@ -318,10 +337,10 @@ async def test_writer_success(loop):
     async def w():
         nonlocal reads, writes
         while reads == 0:
-            await _wait(loop=loop)
+            await _wait()
 
         for _ in range(2):
-            await _wait(loop=loop)
+            await _wait()
 
             # print("current pre-writes", reads)
             await rwlock.writer_lock.acquire()
@@ -331,8 +350,8 @@ async def test_writer_success(loop):
             finally:
                 rwlock.writer_lock.release()
 
-    b1 = Bunch(r, N, loop=loop)
-    b2 = Bunch(w, 1, loop=loop)
+    b1 = Bunch(r, N)
+    b2 = Bunch(w, 1)
 
     await b1.wait_for_finished()
     await b2.wait_for_finished()
@@ -344,7 +363,7 @@ async def test_writer_success(loop):
 @pytest.mark.asyncio
 async def test_writer_success_fast(loop):
     # Verify that a writer can get access
-    rwlock = RWLock(loop=loop, fast=True)
+    rwlock = RWLock(fast=True)
     N = 5
     reads = 0
     writes = 0
@@ -358,17 +377,17 @@ async def test_writer_success_fast(loop):
             try:
                 reads += 1
                 # print("current reads", reads)
-                await asyncio.sleep(0, loop=loop)
+                await asyncio.sleep(0)
             finally:
                 rwlock.reader_lock.release()
 
     async def w():
         nonlocal reads, writes
         while reads == 0:
-            await _wait(loop=loop)
+            await _wait()
 
         for _ in range(2):
-            await _wait(loop=loop)
+            await _wait()
 
             # print("current pre-writes", reads)
             await rwlock.writer_lock.acquire()
@@ -378,8 +397,8 @@ async def test_writer_success_fast(loop):
             finally:
                 rwlock.writer_lock.release()
 
-    b1 = Bunch(r, N, loop=loop)
-    b2 = Bunch(w, 1, loop=loop)
+    b1 = Bunch(r, N)
+    b2 = Bunch(w, 1)
 
     await b1.wait_for_finished()
     await b2.wait_for_finished()
@@ -391,7 +410,7 @@ async def test_writer_success_fast(loop):
 @pytest.mark.asyncio
 async def test_writer_success_with_statement(loop):
     # Verify that a writer can get access
-    rwlock = RWLock(loop=loop)
+    rwlock = RWLock()
     N = 5
     reads = 0
     writes = 0
@@ -408,17 +427,17 @@ async def test_writer_success_with_statement(loop):
     async def w():
         nonlocal reads, writes
         while reads == 0:
-            await _wait(loop=loop)
+            await _wait()
 
         for _ in range(2):
-            await _wait(loop=loop)
+            await _wait()
 
             # print("current pre-writes", reads)
             async with rwlock.writer_lock:
                 writes += 1
 
-    b1 = Bunch(r, N, loop=loop)
-    b2 = Bunch(w, 1, loop=loop)
+    b1 = Bunch(r, N)
+    b2 = Bunch(w, 1)
 
     await b1.wait_for_finished()
     await b2.wait_for_finished()
@@ -427,15 +446,17 @@ async def test_writer_success_with_statement(loop):
     # print('>>>>>>>>>>>', writes, reads)
 
 
-def test_raise_error_on_with_for_reader_lock(loop, fast_track):
-    rwlock = RWLock(loop=loop, fast=fast_track)
+@pytest.mark.asyncio
+async def test_raise_error_on_with_for_reader_lock(loop, fast_track):
+    rwlock = RWLock(fast=fast_track)
     with pytest.raises(RuntimeError):
         with rwlock.reader_lock:
             pass
 
 
-def test_raise_error_on_with_for_writer_lock(loop, fast_track):
-    rwlock = RWLock(loop=loop, fast=fast_track)
+@pytest.mark.asyncio
+async def test_raise_error_on_with_for_writer_lock(loop, fast_track):
+    rwlock = RWLock(fast=fast_track)
     with pytest.raises(RuntimeError):
         with rwlock.writer_lock:
             pass
@@ -443,7 +464,7 @@ def test_raise_error_on_with_for_writer_lock(loop, fast_track):
 
 @pytest.mark.asyncio
 async def test_read_locked(loop, fast_track):
-    rwlock = RWLock(loop=loop, fast=fast_track)
+    rwlock = RWLock(fast=fast_track)
     assert not rwlock.reader_lock.locked
     async with rwlock.reader_lock:
         assert rwlock.reader_lock.locked
@@ -451,7 +472,7 @@ async def test_read_locked(loop, fast_track):
 
 @pytest.mark.asyncio
 async def test_write_locked(loop, fast_track):
-    rwlock = RWLock(loop=loop, fast=fast_track)
+    rwlock = RWLock(fast=fast_track)
     assert not rwlock.writer_lock.locked
     async with rwlock.writer_lock:
         assert rwlock.writer_lock.locked
@@ -459,7 +480,7 @@ async def test_write_locked(loop, fast_track):
 
 @pytest.mark.asyncio
 async def test_write_read_lock_multiple_tasks(loop, fast_track):
-    rwlock = RWLock(loop=loop, fast=fast_track)
+    rwlock = RWLock(fast=fast_track)
     rl = rwlock.reader
     wl = rwlock.writer
 
@@ -472,7 +493,7 @@ async def test_write_read_lock_multiple_tasks(loop, fast_track):
     async with wl:
         assert wl.locked
         assert not rl.locked
-        task = asyncio.Task(coro(), loop=loop)
+        task = asyncio.Task(coro())
         await asyncio.sleep(0.1, loop)
     await task
     assert not rl.locked
@@ -481,7 +502,7 @@ async def test_write_read_lock_multiple_tasks(loop, fast_track):
 
 def test_current_task(loop):
     with pytest.raises(RuntimeError):
-        current_task(loop=loop)
+        current_task(loop)
 
     with pytest.raises(RuntimeError):
         current_task()
@@ -489,7 +510,7 @@ def test_current_task(loop):
 
 @pytest.mark.asyncio
 async def test_read_context_manager(loop, fast_track):
-    rwlock = RWLock(loop=loop, fast=fast_track)
+    rwlock = RWLock(fast=fast_track)
     reader = rwlock.reader_lock
     assert not reader.locked
     async with reader:
@@ -498,7 +519,7 @@ async def test_read_context_manager(loop, fast_track):
 
 @pytest.mark.asyncio
 async def test_write_context_manager(loop, fast_track):
-    rwlock = RWLock(loop=loop, fast=fast_track)
+    rwlock = RWLock(fast=fast_track)
     writer = rwlock.writer_lock
     assert not writer.locked
     async with writer:
@@ -507,7 +528,7 @@ async def test_write_context_manager(loop, fast_track):
 
 @pytest.mark.asyncio
 async def test_await_read_lock(loop, fast_track):
-    rwlock = RWLock(loop=loop, fast=fast_track)
+    rwlock = RWLock(fast=fast_track)
     reader = rwlock.reader_lock
     assert not reader.locked
     async with reader:
@@ -516,7 +537,7 @@ async def test_await_read_lock(loop, fast_track):
 
 @pytest.mark.asyncio
 async def test_await_write_lock(loop, fast_track):
-    rwlock = RWLock(loop=loop, fast=fast_track)
+    rwlock = RWLock(fast=fast_track)
     writer = rwlock.writer_lock
     assert not writer.locked
     async with writer:

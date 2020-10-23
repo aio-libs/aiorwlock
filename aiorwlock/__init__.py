@@ -1,4 +1,5 @@
 import asyncio
+import warnings
 from collections import deque
 from typing import Any, Deque, List, Optional, Tuple
 
@@ -33,9 +34,9 @@ class _RWLockCore:
     _RL = 1
     _WL = 2
 
-    def __init__(self, fast: bool, loop: OptLoop):
+    def __init__(self, fast: bool, loop: Loop):
         self._do_yield = not fast
-        self._loop: Loop = loop or asyncio.get_event_loop()
+        self._loop: Loop = loop
         self._read_waiters: Deque[Future[None]] = deque()
         self._write_waiters: Deque[Future[None]] = deque()
         self._r_state: int = 0
@@ -250,7 +251,25 @@ class RWLock:
     core = _RWLockCore
 
     def __init__(self, *, fast: bool = False, loop: OptLoop = None) -> None:
-        self._loop: Loop = loop or asyncio.get_event_loop()
+        if loop is None:
+            loop = asyncio.get_event_loop()
+        else:
+            warnings.warn(
+                'Passing "loop" argument '
+                'is deprecated since aiorwlock 1.0 and scheduled for removal '
+                'in aiorwlock 2.0',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        if not loop.is_running():
+            warnings.warn(
+                'Instantiation of RWLock outside of async function context '
+                'is deprecated since aiorwlock 1.0 and scheduled for removal '
+                'in aiorwlock 2.0',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        self._loop: Loop = loop
         core = self.core(fast, self._loop)
         self._reader_lock = _ReaderLock(core)
         self._writer_lock = _WriterLock(core)

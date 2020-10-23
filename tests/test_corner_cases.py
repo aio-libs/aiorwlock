@@ -25,7 +25,7 @@ def should_fail(timeout, loop):
 
 @pytest.mark.asyncio
 async def test_get_write_then_read(loop):
-    rwlock = RWLock(loop=loop)
+    rwlock = RWLock()
 
     rl = rwlock.reader
     wl = rwlock.writer
@@ -40,7 +40,7 @@ async def test_get_write_then_read(loop):
 
 @pytest.mark.asyncio
 async def test_get_write_then_read_and_write_again(loop):
-    rwlock = RWLock(loop=loop)
+    rwlock = RWLock()
     rl = rwlock.reader
     wl = rwlock.writer
 
@@ -54,14 +54,14 @@ async def test_get_write_then_read_and_write_again(loop):
                 assert wl.locked
                 writes.append('should not be here')
 
-    ensure_future(get_write_lock(), loop=loop)
+    ensure_future(get_write_lock())
 
     async with wl:
         assert wl.locked
 
         async with rl:
             f.set_result(None)
-            await asyncio.sleep(0.12, loop=loop)
+            await asyncio.sleep(0.12)
             # second task can not append to writes
             assert writes == []
             assert rl.locked
@@ -69,7 +69,7 @@ async def test_get_write_then_read_and_write_again(loop):
 
 @pytest.mark.asyncio
 async def test_writers_deadlock(loop):
-    rwlock = RWLock(loop=loop)
+    rwlock = RWLock()
     rl = rwlock.reader
     wl = rwlock.writer
 
@@ -91,8 +91,8 @@ async def test_writers_deadlock(loop):
 
     async with rl:
         assert rl.locked
-        task_b = ensure_future(coro(), loop=loop)
-        task_c = ensure_future(coro(), loop=loop)
+        task_b = ensure_future(coro())
+        task_c = ensure_future(coro())
         await asyncio.sleep(0.1, loop)
     # cancel lock waiter right after release
     task_b.cancel()
@@ -107,7 +107,7 @@ async def test_writers_deadlock(loop):
 
 @pytest.mark.asyncio
 async def test_readers_cancel(loop):
-    rwlock = RWLock(loop=loop)
+    rwlock = RWLock()
     rl = rwlock.reader
     wl = rwlock.writer
 
@@ -118,8 +118,8 @@ async def test_readers_cancel(loop):
 
     async with wl:
         assert wl.locked
-        task_b = ensure_future(coro(rl), loop=loop)
-        task_c = ensure_future(coro(rl), loop=loop)
+        task_b = ensure_future(coro(rl))
+        task_c = ensure_future(coro(rl))
         await asyncio.sleep(0.1, loop)
 
     task_b.cancel()
@@ -133,14 +133,14 @@ async def test_readers_cancel(loop):
 
 @pytest.mark.asyncio
 async def test_canceled_inside_acquire(loop):
-    rwlock = RWLock(loop=loop)
+    rwlock = RWLock()
     rl = rwlock.reader
 
     async def coro(lock):
         async with lock:
             pass
 
-    task = ensure_future(coro(rl), loop=loop)
+    task = ensure_future(coro(rl))
     await asyncio.sleep(0)
     task.cancel()
 
