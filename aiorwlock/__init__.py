@@ -51,6 +51,15 @@ class _RWLockCore:
     def write_locked(self) -> bool:
         return self._w_state > 0
 
+    async def _yield_after_acquire(self, lock_type: int) -> None:
+        if self._do_yield:
+            try:
+                await asyncio.sleep(0.0, loop=self._loop)
+            except asyncio.CancelledError:
+                self._release(lock_type)
+                self._wake_up()
+                raise
+
     # Acquire the lock in read mode.
     async def acquire_read(self) -> bool:
         me = current_task(loop=self._loop)
@@ -58,8 +67,7 @@ class _RWLockCore:
         if (me, self._RL) in self._owning or (me, self._WL) in self._owning:
             self._r_state += 1
             self._owning.append((me, self._RL))
-            if self._do_yield:
-                await asyncio.sleep(0.0, loop=self._loop)
+            await self._yield_after_acquire(self._RL)
             return True
 
         if (
@@ -69,8 +77,7 @@ class _RWLockCore:
         ):
             self._r_state += 1
             self._owning.append((me, self._RL))
-            if self._do_yield:
-                await asyncio.sleep(0.0, loop=self._loop)
+            await self._yield_after_acquire(self._RL)
             return True
 
         fut = self._loop.create_future()
@@ -96,8 +103,7 @@ class _RWLockCore:
         if (me, self._WL) in self._owning:
             self._w_state += 1
             self._owning.append((me, self._WL))
-            if self._do_yield:
-                await asyncio.sleep(0.0, loop=self._loop)
+            await self._yield_after_acquire(self._WL)
             return True
         elif (me, self._RL) in self._owning:
             if self._r_state > 0:
@@ -106,8 +112,7 @@ class _RWLockCore:
         if self._r_state == 0 and self._w_state == 0:
             self._w_state += 1
             self._owning.append((me, self._WL))
-            if self._do_yield:
-                await asyncio.sleep(0.0, loop=self._loop)
+            await self._yield_after_acquire(self._WL)
             return True
 
         fut = self._loop.create_future()
