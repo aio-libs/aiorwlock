@@ -34,7 +34,7 @@ bandit:
 mypy:
 	mypy aiorwlock --disallow-untyped-calls --strict
 
-cov cover coverage: flake checkrst pyroma bandit
+cov cover coverage:
 	pytest -sv --cov=aiorwlock --cov-report=term --cov-report=html ./tests
 	@echo "open file://`pwd`/htmlcov/index.html"
 

@@ -46,6 +46,12 @@ jobs:
     - name: Run lint
       run: |
         make lint
+    - name: Run pyroma
+      run: |
+        make pyroma
+    - name: Run bandit
+      run: |
+        make bandit
     - name: Prepare twine checker
       run: |
         pip install -U twine wheel
