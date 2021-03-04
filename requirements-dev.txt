@@ -1,7 +1,7 @@
 -e .
 bandit==1.7.0; implementation_name=="cpython"
 black==20.8b1; implementation_name=="cpython"
-flake8-bugbear==20.11.1; implementation_name=="cpython"
+flake8-bugbear==21.3.1; implementation_name=="cpython"
 flake8-quotes==3.2.0; implementation_name=="cpython"
 flake8==3.8.4; implementation_name=="cpython"
 isort==5.7.0; implementation_name=="cpython"
