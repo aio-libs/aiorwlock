@@ -51,9 +51,14 @@ WRelease(t) == \/ /\ Wlocked /\ Lock[t] = "Write"
                \/ /\ Wlocked /\ Lock[t] = "WriteRead"
                   /\ WState' = WState - 1 /\ Lock' = [Lock EXCEPT ![t] = "Read"]
                   /\ UNCHANGED RState
+
+
+(* Allow infinite stuttering to prevent deadlock. *)
+Finished == /\ \A t \in Task: Lock[t] = "Finished"
+            /\ UNCHANGED <<RState, WState, Lock>>
 -----------------------------------------------------------------------------
 
-Next == \E t \in Task: RAquire(t) \/ WAquire(t) \/ RRelease(t) \/ WRelease(t)
+Next == \E t \in Task: RAquire(t) \/ WAquire(t) \/ RRelease(t) \/ WRelease(t) \/ Finished
 
 Spec == LockInit /\ [][Next]_<<RState, WState, Lock>>
 
