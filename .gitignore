@@ -65,3 +65,5 @@ coverage
 cscope.files
 cscope.out
 tags
+
+.python-version
