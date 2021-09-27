@@ -1,6 +1,12 @@
 Changes
 -------
 
+1.1.0 (2021-9-27)
+^^^^^^^^^^^^^^^^^
+
+* Remove explicit loop usage in `asyncio.sleep()` call, make the library forward
+  compatible with Python 3.10
+
 1.0.0 (2020-12-32)
 ^^^^^^^^^^^^^^^^^^
 

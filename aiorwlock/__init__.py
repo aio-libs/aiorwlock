@@ -10,7 +10,7 @@ OptLoop = Optional[Loop]
 Future = asyncio.Future
 Task = asyncio.Task
 
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __all__ = ('RWLock',)
 
 
@@ -55,7 +55,7 @@ class _RWLockCore:
     async def _yield_after_acquire(self, lock_type: int) -> None:
         if self._do_yield:
             try:
-                await asyncio.sleep(0.0, loop=self._loop)
+                await asyncio.sleep(0.0)
             except asyncio.CancelledError:
                 self._release(lock_type)
                 self._wake_up()
