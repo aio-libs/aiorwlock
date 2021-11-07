@@ -85,11 +85,11 @@ class _RWLockCore:
         self._read_waiters.append(fut)
         try:
             await fut
-            self._r_state += 1
             self._owning.append((me, self._RL))
             return True
 
         except asyncio.CancelledError:
+            self._r_state -= 1
             self._wake_up()
             raise
 
@@ -120,11 +120,11 @@ class _RWLockCore:
         self._write_waiters.append(fut)
         try:
             await fut
-            self._w_state += 1
             self._owning.append((me, self._WL))
             return True
 
         except asyncio.CancelledError:
+            self._w_state -= 1
             self._wake_up()
             raise
 
@@ -157,22 +157,18 @@ class _RWLockCore:
         # waiters.
         if self._r_state == 0 and self._w_state == 0:
             if self._write_waiters:
-                self._wake_up_first(self._write_waiters)
-            elif self._read_waiters:
-                self._wake_up_all(self._read_waiters)
+                # Wake up the first waiter which isn't cancelled.
+                for fut in self._write_waiters:
+                    if not fut.done():
+                        fut.set_result(None)
+                        self._w_state += 1
+                        return
 
-    def _wake_up_first(self, waiters: 'Deque[Future[None]]') -> None:
-        # Wake up the first waiter who isn't cancelled.
-        for fut in waiters:
-            if not fut.done():
-                fut.set_result(None)
-                break
-
-    def _wake_up_all(self, waiters: 'Deque[Future[None]]') -> None:
-        # Wake up all not cancelled waiters.
-        for fut in waiters:
-            if not fut.done():
-                fut.set_result(None)
+            # Wake up all not cancelled waiters.
+            for fut in self._read_waiters:
+                if not fut.done():
+                    fut.set_result(None)
+                    self._r_state += 1
 
 
 class _ContextManagerMixin:
