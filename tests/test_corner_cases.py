@@ -166,6 +166,7 @@ async def test_race_multiple_writers(loop):
             seq.append('FIN1')
 
     async def write(lock):
+        await asyncio.sleep(0)  # PY36 seems to run tasks in the wrong order.
         async with lock.writer:
             seq.append('START2')
             await asyncio.sleep(0.1)
