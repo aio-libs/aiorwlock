@@ -158,17 +158,17 @@ async def test_race_multiple_writers(loop):
 
     async def write_wait(lock):
         async with lock.reader:
-            await asyncio.sleep(.1)
+            await asyncio.sleep(0.1)
             seq.append("READ")
         async with lock.writer:
             seq.append("START1")
-            await asyncio.sleep(.1)
+            await asyncio.sleep(0.1)
             seq.append("FIN1")
 
     async def write(lock):
         async with lock.writer:
             seq.append("START2")
-            await asyncio.sleep(.1)
+            await asyncio.sleep(0.1)
             seq.append("FIN2")
 
     lock = RWLock(fast=True)
