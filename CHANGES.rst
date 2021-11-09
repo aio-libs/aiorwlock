@@ -1,8 +1,14 @@
 Changes
 -------
 
-1.1.0 (2021-9-27)
-^^^^^^^^^^^^^^^^^
+
+1.2.0 (2021-11-09)
+^^^^^^^^^^^^^^^^^^
+
+* Fix a bug that make concurrent writes possible under some (rare) conjunctions (#235)
+
+1.1.0 (2021-09-27)
+^^^^^^^^^^^^^^^^^^
 
 * Remove explicit loop usage in `asyncio.sleep()` call, make the library forward
   compatible with Python 3.10
