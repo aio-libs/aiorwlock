@@ -5,7 +5,7 @@ Changes
 1.2.0 (2021-11-09)
 ^^^^^^^^^^^^^^^^^^
 
-* Fix a bug that make concurrent writes possible under some (rare) conjunctions (#235)
+* Fix a bug that makes concurrent writes possible under some (rare) conjunctions (#235)
 
 1.1.0 (2021-09-27)
 ^^^^^^^^^^^^^^^^^^
