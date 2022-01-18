@@ -3,14 +3,14 @@ import contextlib
 
 import pytest
 
-from aiorwlock import RWLock, _current_task
+from aiorwlock import RWLock
 
 ensure_future = asyncio.ensure_future
 
 
 @contextlib.contextmanager
 def should_fail(timeout, loop):
-    task = _current_task(loop)
+    task = asyncio.current_task(loop)
 
     handle = loop.call_later(timeout, task.cancel)
     try:
