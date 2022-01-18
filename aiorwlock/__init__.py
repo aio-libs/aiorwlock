@@ -10,7 +10,7 @@ OptLoop = Optional[Loop]
 Future = asyncio.Future
 Task = asyncio.Task
 
-__version__ = '1.2.0'
+__version__ = '1.3.0'
 __all__ = ('RWLock',)
 
 
