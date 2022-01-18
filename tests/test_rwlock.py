@@ -48,22 +48,6 @@ async def _wait():
     await asyncio.sleep(0.01)
 
 
-def test_ctor_deprecated_implicit_not_running(loop):
-    with pytest.warns(DeprecationWarning):
-        RWLock()
-
-
-def test_ctor_deprecated_explicit_non_running(loop):
-    with pytest.warns(DeprecationWarning):
-        RWLock(loop=loop)
-
-
-@pytest.mark.asyncio
-async def test_ctor_loop_deprecated_arg(loop):
-    with pytest.warns(DeprecationWarning):
-        RWLock(loop=loop)
-
-
 @pytest.mark.asyncio
 async def test_ctor_loop_reader(loop):
     rwlock = RWLock().reader_lock

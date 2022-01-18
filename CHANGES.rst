@@ -6,6 +6,7 @@ Changes
 
 * Dropped Python 3.6 support
 * Python 3.10 is officially supported
+* Drop deprecated `loop` parameter from `RWLock` constructor
 
 
 1.2.0 (2021-11-09)

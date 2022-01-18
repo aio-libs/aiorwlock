@@ -238,17 +238,8 @@ class RWLock:
 
     core = _RWLockCore
 
-    def __init__(self, *, fast: bool = False, loop: OptLoop = None) -> None:
-        if loop is None:
-            loop = asyncio.get_event_loop()
-        else:
-            warnings.warn(
-                'Passing "loop" argument '
-                'is deprecated since aiorwlock 1.0 and scheduled for removal '
-                'in aiorwlock 2.0',
-                DeprecationWarning,
-                stacklevel=2,
-            )
+    def __init__(self, *, fast: bool = False) -> None:
+        loop = asyncio.get_running_loop()
         if not loop.is_running():
             warnings.warn(
                 'Instantiation of RWLock outside of async function context '
