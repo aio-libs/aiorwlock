@@ -1,6 +1,12 @@
 Changes
 -------
 
+1.3.0 (2022-1-18)
+^^^^^^^^^^^^^^^^^^
+
+* Dropped Python 3.6 support
+* Python 3.10 is officially supported
+
 
 1.2.0 (2021-11-09)
 ^^^^^^^^^^^^^^^^^^

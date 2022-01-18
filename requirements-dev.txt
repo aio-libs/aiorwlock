@@ -10,4 +10,3 @@ pyroma==3.2; implementation_name=="cpython"
 pytest-asyncio==0.17.2
 pytest-cov==3.0.0
 pytest==6.2.5
-uvloop==0.16.0; implementation_name=="cpython" and python_version>="3.7"
