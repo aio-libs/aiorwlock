@@ -14,18 +14,6 @@ __version__ = '1.2.0'
 __all__ = ('RWLock',)
 
 
-def _current_task(loop: OptLoop = None) -> 'Task[Any]':
-    _loop: Loop = loop or asyncio.get_event_loop()
-    if hasattr(asyncio, 'current_task'):
-        t = asyncio.current_task(loop=_loop)
-    else:
-        # remove once python 3.6 deprecated
-        t = asyncio.Task.current_task(loop=_loop)
-    if t is None:
-        raise RuntimeError('Loop is not running')
-    return t
-
-
 # implementation based on:
 # http://bugs.python.org/issue8800
 
@@ -63,7 +51,8 @@ class _RWLockCore:
 
     # Acquire the lock in read mode.
     async def acquire_read(self) -> bool:
-        me = _current_task(loop=self._loop)
+        me = asyncio.current_task()
+        assert me is not None  # nosec
 
         if (me, self._RL) in self._owning or (me, self._WL) in self._owning:
             self._r_state += 1
@@ -99,7 +88,8 @@ class _RWLockCore:
     # Acquire the lock in write mode.  A 'waiting' count is maintained,
     # ensuring that 'readers' will yield to writers.
     async def acquire_write(self) -> bool:
-        me = _current_task(loop=self._loop)
+        me = asyncio.current_task()
+        assert me is not None  # nosec
 
         if (me, self._WL) in self._owning:
             self._w_state += 1
@@ -139,7 +129,9 @@ class _RWLockCore:
 
     def _release(self, lock_type: int) -> None:
         # assert lock_type in (self._RL, self._WL)
-        me = _current_task(loop=self._loop)
+        me = asyncio.current_task(loop=self._loop)
+        assert me is not None  # nosec
+
         try:
             self._owning.remove((me, lock_type))
         except ValueError:
