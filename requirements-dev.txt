@@ -5,7 +5,7 @@ flake8-bugbear==22.9.23; implementation_name=="cpython"
 flake8-quotes==3.3.1; implementation_name=="cpython"
 flake8==5.0.4; implementation_name=="cpython"
 isort==5.10.1; implementation_name=="cpython"
-mypy==0.971; implementation_name=="cpython"
+mypy==0.981; implementation_name=="cpython"
 pyroma==4.0; implementation_name=="cpython"
 pytest-asyncio==0.19.0
 pytest-cov==3.0.0
