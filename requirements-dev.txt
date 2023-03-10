@@ -1,5 +1,5 @@
 -e .
-bandit==1.7.4; implementation_name=="cpython"
+bandit==1.7.5; implementation_name=="cpython"
 black==23.1.0; implementation_name=="cpython"
 flake8-bugbear==23.2.13; implementation_name=="cpython"
 flake8-quotes==3.3.2; implementation_name=="cpython"
