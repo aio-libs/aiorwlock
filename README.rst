@@ -7,6 +7,9 @@ aiorwlock
 .. image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/aio-libs/Lobby
    :alt: Chat on Gitter
+.. image:: https://img.shields.io/pypi/dm/aiorwlock
+   :target: https://pypistats.org/packages/aiorwlock
+   :alt: Downloads count
 
 Read write lock for asyncio_ . A ``RWLock`` maintains a pair of associated
 locks, one for read-only operations and one for writing. The read lock may be
