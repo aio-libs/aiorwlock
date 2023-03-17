@@ -17,6 +17,7 @@ __all__ = ('RWLock',)
 # implementation based on:
 # http://bugs.python.org/issue8800
 
+
 # The internal lock object managing the RWLock state.
 class _RWLockCore:
     _RL = 1

@@ -149,7 +149,6 @@ async def test_read_upgrade_write_release(loop):
 
 @pytest.mark.asyncio
 async def test_reader_recursion(loop, fast_track):
-
     rwlock = RWLock(fast=fast_track)
     N = 5
     locked = []
