@@ -5,7 +5,7 @@ import pytest
 from aiorwlock import RWLock
 
 
-class Bunch(object):
+class Bunch:
     """A bunch of Tasks. Port python threading tests"""
 
     def __init__(self, f, n, wait_before_exit=False):

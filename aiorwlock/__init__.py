@@ -208,7 +208,7 @@ class _ReaderLock(_ContextManagerMixin):
 
     def __repr__(self) -> str:
         status = 'locked' if self._lock._r_state > 0 else 'unlocked'
-        return '<ReaderLock: [{}]>'.format(status)
+        return f'<ReaderLock: [{status}]>'
 
 
 class _WriterLock(_ContextManagerMixin):
@@ -227,7 +227,7 @@ class _WriterLock(_ContextManagerMixin):
 
     def __repr__(self) -> str:
         status = 'locked' if self._lock._w_state > 0 else 'unlocked'
-        return '<WriterLock: [{}]>'.format(status)
+        return f'<WriterLock: [{status}]>'
 
 
 class RWLock:
@@ -271,4 +271,4 @@ class RWLock:
     def __repr__(self) -> str:
         rl = self.reader_lock.__repr__()
         wl = self.writer_lock.__repr__()
-        return '<RWLock: {} {}>'.format(rl, wl)
+        return f'<RWLock: {rl} {wl}>'

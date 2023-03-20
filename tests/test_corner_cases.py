@@ -19,7 +19,7 @@ def should_fail(timeout, loop):
         handle.cancel()
         return
     else:
-        msg = 'Inner task expected to be cancelled: {}'.format(task)
+        msg = f'Inner task expected to be cancelled: {task}'
         pytest.fail(msg)
 
 
