@@ -9,4 +9,4 @@ mypy==1.5.1; implementation_name=="cpython"
 pyroma==4.2; implementation_name=="cpython"
 pytest-asyncio==0.21.1
 pytest-cov==4.1.0
-pytest==7.4.0
+pytest==7.4.1
