@@ -38,10 +38,10 @@ Requires Python 3.5.3+
    import asyncio
    import aiorwlock
 
+   rwlock = aiorwlock.RWLock()
+
 
    async def go():
-       rwlock = aiorwlock.RWLock()
-
        # acquire reader lock, multiple coroutines allowed to hold the lock
        async with rwlock.reader_lock:
            print('inside reader lock')

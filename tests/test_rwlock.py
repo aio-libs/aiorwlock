@@ -51,27 +51,27 @@ async def _wait():
 @pytest.mark.asyncio
 async def test_ctor_loop_reader(loop):
     rwlock = RWLock().reader_lock
-    assert rwlock._lock._loop is loop
+    assert rwlock._lock._get_loop() is loop
 
 
 @pytest.mark.asyncio
 async def test_ctor_noloop_reader(loop):
     asyncio.set_event_loop(loop)
     rwlock = RWLock().reader_lock
-    assert rwlock._lock._loop is loop
+    assert rwlock._lock._get_loop() is loop
 
 
 @pytest.mark.asyncio
 async def test_ctor_loop_writer(loop):
     rwlock = RWLock().writer_lock
-    assert rwlock._lock._loop is loop
+    assert rwlock._lock._get_loop() is loop
 
 
 @pytest.mark.asyncio
 async def test_ctor_noloop_writer(loop):
     asyncio.set_event_loop(loop)
     rwlock = RWLock().writer_lock
-    assert rwlock._lock._loop is loop
+    assert rwlock._lock._get_loop() is loop
 
 
 @pytest.mark.asyncio
