@@ -517,3 +517,37 @@ async def test_await_write_lock(loop, fast_track):
     assert not writer.locked
     async with writer:
         assert writer.locked
+
+
+@pytest.mark.asyncio
+async def test_writer_ambiguous_loops(fast_track):
+    loop = asyncio.new_event_loop()
+
+    try:
+        lock = RWLock(fast=fast_track)
+        lock._writer_lock._lock._loop = loop
+
+        with pytest.raises(
+            RuntimeError, match='is bound to a different event loop'
+        ):
+            async with lock.writer_lock:
+                pass
+    finally:
+        loop.close()
+
+
+@pytest.mark.asyncio
+async def test_reader_ambiguous_loops(fast_track):
+    loop = asyncio.new_event_loop()
+
+    try:
+        lock = RWLock(fast=fast_track)
+        lock._reader_lock._lock._loop = loop
+
+        with pytest.raises(
+            RuntimeError, match='is bound to a different event loop'
+        ):
+            async with lock.reader_lock:
+                pass
+    finally:
+        loop.close()
