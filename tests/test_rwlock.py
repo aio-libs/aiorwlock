@@ -51,27 +51,27 @@ async def _wait():
 @pytest.mark.asyncio
 async def test_ctor_loop_reader(loop):
     rwlock = RWLock().reader_lock
-    assert rwlock._lock._loop is loop
+    assert rwlock._lock._get_loop() is loop
 
 
 @pytest.mark.asyncio
 async def test_ctor_noloop_reader(loop):
     asyncio.set_event_loop(loop)
     rwlock = RWLock().reader_lock
-    assert rwlock._lock._loop is loop
+    assert rwlock._lock._get_loop() is loop
 
 
 @pytest.mark.asyncio
 async def test_ctor_loop_writer(loop):
     rwlock = RWLock().writer_lock
-    assert rwlock._lock._loop is loop
+    assert rwlock._lock._get_loop() is loop
 
 
 @pytest.mark.asyncio
 async def test_ctor_noloop_writer(loop):
     asyncio.set_event_loop(loop)
     rwlock = RWLock().writer_lock
-    assert rwlock._lock._loop is loop
+    assert rwlock._lock._get_loop() is loop
 
 
 @pytest.mark.asyncio
@@ -517,3 +517,48 @@ async def test_await_write_lock(loop, fast_track):
     assert not writer.locked
     async with writer:
         assert writer.locked
+
+
+@pytest.mark.asyncio
+async def test_writer_ambiguous_loops(fast_track):
+    loop = asyncio.new_event_loop()
+
+    try:
+        lock = RWLock(fast=fast_track)
+        lock._writer_lock._lock._loop = loop
+
+        with pytest.raises(
+            RuntimeError, match='is bound to a different event loop'
+        ):
+            async with lock.writer_lock:
+                pass
+    finally:
+        loop.close()
+
+
+@pytest.mark.asyncio
+async def test_reader_ambiguous_loops(fast_track):
+    loop = asyncio.new_event_loop()
+
+    try:
+        lock = RWLock(fast=fast_track)
+        lock._reader_lock._lock._loop = loop
+
+        with pytest.raises(
+            RuntimeError, match='is bound to a different event loop'
+        ):
+            async with lock.reader_lock:
+                pass
+    finally:
+        loop.close()
+
+
+def test_created_outside_of_coroutine(event_loop, fast_track):
+    async def main():
+        async with lock.reader_lock:
+            pass
+        async with lock.writer_lock:
+            pass
+
+    lock = RWLock(fast=fast_track)
+    event_loop.run_until_complete(main())

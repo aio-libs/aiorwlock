@@ -1,5 +1,5 @@
 import asyncio
-import warnings
+import threading
 from collections import deque
 from typing import Any, Deque, List, Optional, Tuple
 
@@ -17,21 +17,38 @@ __all__ = ('RWLock',)
 # implementation based on:
 # http://bugs.python.org/issue8800
 
+_global_lock = threading.Lock()
+
 
 # The internal lock object managing the RWLock state.
 class _RWLockCore:
     _RL = 1
     _WL = 2
+    _loop = None
 
-    def __init__(self, fast: bool, loop: Loop):
+    def __init__(self, fast: bool):
         self._do_yield = not fast
-        self._loop: Loop = loop
         self._read_waiters: Deque[Future[None]] = deque()
         self._write_waiters: Deque[Future[None]] = deque()
         self._r_state: int = 0
         self._w_state: int = 0
         # tasks will be few, so a list is not inefficient
         self._owning: List[Tuple[Task[Any], int]] = []
+
+    def _get_loop(self) -> Loop:
+        """
+        From: https://github.com/python/cpython/blob/3.12/Lib/asyncio/mixins.py
+        """
+
+        loop = asyncio.get_event_loop()
+
+        if self._loop is None:
+            with _global_lock:
+                if self._loop is None:
+                    self._loop = loop
+        if loop is not self._loop:
+            raise RuntimeError(f'{self!r} is bound to a different event loop')
+        return loop
 
     @property
     def read_locked(self) -> bool:
@@ -71,7 +88,7 @@ class _RWLockCore:
             await self._yield_after_acquire(self._RL)
             return True
 
-        fut = self._loop.create_future()
+        fut = self._get_loop().create_future()
         self._read_waiters.append(fut)
         try:
             await fut
@@ -107,7 +124,7 @@ class _RWLockCore:
             await self._yield_after_acquire(self._WL)
             return True
 
-        fut = self._loop.create_future()
+        fut = self._get_loop().create_future()
         self._write_waiters.append(fut)
         try:
             await fut
@@ -130,7 +147,7 @@ class _RWLockCore:
 
     def _release(self, lock_type: int) -> None:
         # assert lock_type in (self._RL, self._WL)
-        me = asyncio.current_task(loop=self._loop)
+        me = asyncio.current_task(loop=self._get_loop())
         assert me is not None  # nosec
 
         try:
@@ -240,17 +257,7 @@ class RWLock:
     core = _RWLockCore
 
     def __init__(self, *, fast: bool = False) -> None:
-        loop = asyncio.get_running_loop()
-        if not loop.is_running():
-            warnings.warn(
-                'Instantiation of RWLock outside of async function context '
-                'is deprecated since aiorwlock 1.0 and scheduled for removal '
-                'in aiorwlock 2.0',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-        self._loop: Loop = loop
-        core = self.core(fast, self._loop)
+        core = self.core(fast)
         self._reader_lock = _ReaderLock(core)
         self._writer_lock = _WriterLock(core)
 
