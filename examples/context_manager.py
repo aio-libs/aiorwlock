@@ -2,10 +2,10 @@ import asyncio
 
 import aiorwlock
 
-rwlock = aiorwlock.RWLock()
-
 
 async def go():
+    rwlock = aiorwlock.RWLock()
+
     # acquire reader lock
     async with rwlock.reader_lock:
         print('inside reader lock')

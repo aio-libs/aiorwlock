@@ -2,10 +2,10 @@ import asyncio
 
 import aiorwlock
 
-rwlock = aiorwlock.RWLock()
-
 
 async def go():
+    rwlock = aiorwlock.RWLock()
+
     # acquire reader lock
     await rwlock.reader_lock.acquire()
     try:
