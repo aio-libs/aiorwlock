@@ -20,25 +20,11 @@ __all__ = ('RWLock',)
 _global_lock = threading.Lock()
 
 
-class _LoopBoundMixin:
-    _loop = None
-
-    def _get_loop(self) -> Loop:
-        loop = asyncio.get_event_loop()
-
-        if self._loop is None:
-            with _global_lock:
-                if self._loop is None:
-                    self._loop = loop
-        if loop is not self._loop:
-            raise RuntimeError(f'{self!r} is bound to a different event loop')
-        return loop
-
-
 # The internal lock object managing the RWLock state.
-class _RWLockCore(_LoopBoundMixin):
+class _RWLockCore:
     _RL = 1
     _WL = 2
+    _loop = None
 
     def __init__(self, fast: bool):
         self._do_yield = not fast
@@ -48,6 +34,21 @@ class _RWLockCore(_LoopBoundMixin):
         self._w_state: int = 0
         # tasks will be few, so a list is not inefficient
         self._owning: List[Tuple[Task[Any], int]] = []
+
+    def _get_loop(self) -> Loop:
+        """
+        From: https://github.com/python/cpython/blob/3.12/Lib/asyncio/mixins.py
+        """
+
+        loop = asyncio.get_event_loop()
+
+        if self._loop is None:
+            with _global_lock:
+                if self._loop is None:
+                    self._loop = loop
+        if loop is not self._loop:
+            raise RuntimeError(f'{self!r} is bound to a different event loop')
+        return loop
 
     @property
     def read_locked(self) -> bool:
