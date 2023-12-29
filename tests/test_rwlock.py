@@ -551,3 +551,14 @@ async def test_reader_ambiguous_loops(fast_track):
                 pass
     finally:
         loop.close()
+
+
+def test_created_outside_of_coroutine():
+    async def main():
+        async with lock.reader_lock:
+            pass
+        async with lock.writer_lock:
+            pass
+
+    lock = RWLock()
+    asyncio.run(main())
