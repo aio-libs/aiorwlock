@@ -553,12 +553,12 @@ async def test_reader_ambiguous_loops(fast_track):
         loop.close()
 
 
-def test_created_outside_of_coroutine():
+def test_created_outside_of_coroutine(event_loop, fast_track):
     async def main():
         async with lock.reader_lock:
             pass
         async with lock.writer_lock:
             pass
 
-    lock = RWLock()
-    asyncio.run(main())
+    lock = RWLock(fast=fast_track)
+    event_loop.run_until_complete(main())
