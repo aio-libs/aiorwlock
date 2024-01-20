@@ -28,7 +28,7 @@ class _RWLockCore:
         # tasks will be few, so a list is not inefficient
         self._owning: List[Tuple[asyncio.Task[Any], int]] = []
 
-    def _get_loop(self) -> Loop:
+    def _get_loop(self) -> asyncio.AbstractEventLoop:
         """
         From: https://github.com/python/cpython/blob/3.12/Lib/asyncio/mixins.py
         """
