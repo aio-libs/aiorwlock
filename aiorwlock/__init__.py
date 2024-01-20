@@ -3,13 +3,6 @@ import threading
 from collections import deque
 from typing import Any, Deque, List, Optional, Tuple
 
-Loop = asyncio.AbstractEventLoop
-OptLoop = Optional[Loop]
-
-# silence LGTM service alerts
-Future = asyncio.Future
-Task = asyncio.Task
-
 __version__ = '1.3.0'
 __all__ = ('RWLock',)
 
@@ -28,12 +21,12 @@ class _RWLockCore:
 
     def __init__(self, fast: bool):
         self._do_yield = not fast
-        self._read_waiters: Deque[Future[None]] = deque()
-        self._write_waiters: Deque[Future[None]] = deque()
+        self._read_waiters: Deque[asyncio.Future[None]] = deque()
+        self._write_waiters: Deque[asyncio.Future[None]] = deque()
         self._r_state: int = 0
         self._w_state: int = 0
         # tasks will be few, so a list is not inefficient
-        self._owning: List[Tuple[Task[Any], int]] = []
+        self._owning: List[Tuple[asyncio.Task[Any], int]] = []
 
     def _get_loop(self) -> Loop:
         """
