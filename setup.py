@@ -9,7 +9,7 @@ def read(f):
 
 
 def read_version():
-    regexp = re.compile(r"^__version__\W*=\W*'([\d.abrc]+)'")
+    regexp = re.compile(r'^__version__\W*=\W*"([\d.abrc]+)"')
     init_py = os.path.join(
         os.path.dirname(__file__), 'aiorwlock', '__init__.py'
     )

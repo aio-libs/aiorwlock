@@ -3,7 +3,7 @@ import threading
 from collections import deque
 from typing import Any, Deque, List, Tuple
 
-__version__ = '1.3.0'
+__version__ = "1.4.0"
 __all__ = ('RWLock',)
 
 

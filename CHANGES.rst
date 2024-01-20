@@ -1,7 +1,14 @@
 Changes
 -------
 
-1.3.0 (2022-1-18)
+1.4.0 (2024-01-20)
+^^^^^^^^^^^^^^^^^^
+
+* Lazily evaluate current loop to allow instantiating lock outside of async functions.
+* Support Python 3.11 and 3.12.
+* Drop Python 3.7 support.
+
+1.3.0 (2022-01-18)
 ^^^^^^^^^^^^^^^^^^
 
 * Dropped Python 3.6 support
