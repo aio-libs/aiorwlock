@@ -31,8 +31,6 @@ Implementation is almost direct port from this patch_.
 Example
 -------
 
-Requires Python 3.5.3+
-
 .. code:: python
 
    import asyncio
@@ -53,8 +51,7 @@ Requires Python 3.5.3+
            await asyncio.sleep(0.1)
 
 
-   loop = asyncio.get_event_loop()
-   loop.run_until_complete(go())
+   asyncio.run(go())
 
 
 Fast path
@@ -85,5 +82,5 @@ License
 ``aiorwlock`` is offered under the Apache 2 license.
 
 
-.. _asyncio: http://docs.python.org/3.8/library/asyncio.html
+.. _asyncio: http://docs.python.org/3/library/asyncio.html
 .. _patch: http://bugs.python.org/issue8800

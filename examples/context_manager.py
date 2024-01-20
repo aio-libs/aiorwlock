@@ -17,5 +17,4 @@ async def go():
         await asyncio.sleep(0.1)
 
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(go())
+asyncio.run(go())

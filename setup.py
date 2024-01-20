@@ -3,8 +3,6 @@ import re
 
 from setuptools import setup
 
-install_requires = []
-
 
 def read(f):
     return open(os.path.join(os.path.dirname(__file__), f)).read().strip()
@@ -27,10 +25,11 @@ classifiers = [
     'License :: OSI Approved :: Apache Software License',
     'Intended Audience :: Developers',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     'Operating System :: OS Independent',
     'Development Status :: 4 - Beta',
     'Framework :: AsyncIO',
@@ -55,10 +54,10 @@ setup(
     download_url='https://pypi.python.org/pypi/aiorwlock',
     license='Apache 2',
     packages=['aiorwlock'],
-    install_requires=install_requires,
+    install_requires=(),
     keywords=['aiorwlock', 'lock', 'asyncio'],
     zip_safe=True,
     project_urls=project_urls,
-    python_requires='>=3.7.0',
+    python_requires=">=3.8",
     include_package_data=True,
 )
