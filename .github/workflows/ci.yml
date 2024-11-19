@@ -72,12 +72,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Install poetry
+        uses: abatilo/actions-poetry@v2
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.pyver }}
           cache: "poetry"
-      - name: Install poetry
-        uses: abatilo/actions-poetry@v2
       # - name: Setup Python ${{ matrix.pyver }}
       #   uses: actions/setup-python@v2
       #   with:
@@ -121,12 +121,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Install poetry
+        uses: abatilo/actions-poetry@v2
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
           cache: "poetry"
-      - name: Install poetry
-        uses: abatilo/actions-poetry@v2
       - name: Install dependencies
         run: |
           poetry install
