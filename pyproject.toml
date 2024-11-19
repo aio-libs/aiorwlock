@@ -1,0 +1,50 @@
+[tool.poetry]
+name = "aiorwlock"
+version = "1.4.0"
+description = "Read write lock for asyncio."
+authors = ["Nikolay Novik <nickolainovik@gmail.com>"]
+license = "Apache-2.0"
+homepage = "https://github.com/aio-libs/aiorwlock"
+repository = "https://github.com/aio-libs/aiorwlock"
+documentation = "https://github.com/aio-libs/aiorwlock"
+keywords = ["aiorwlock", "lock", "asyncio"]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+    "Framework :: AsyncIO"
+]
+
+[tool.poetry.dependencies]
+python = ">=3.9"
+
+[tool.poetry.dev-dependencies]
+bandit = "1.7.10"
+black = "24.10.0"
+flake8-bugbear = "24.10.31"
+flake8 = "7.1.1"
+isort = "5.13.2"
+mypy = "1.13.0"
+pyroma = "4.2"
+pytest-asyncio = "0.24.0"
+pytest-cov = "6.0.0"
+pytest = "8.3.3"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+filterwarnings = ["error"]
+testpaths = ["tests"]
+asyncio_mode = "strict"
+
+[tool.mypy]
+[tool.mypy-pytest]
+ignore_missing_imports = true
