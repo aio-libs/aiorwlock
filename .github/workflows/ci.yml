@@ -19,12 +19,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Install poetry
+        uses: abatilo/actions-poetry@v2
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
           cache: "poetry"
-      - name: Install poetry
-        uses: abatilo/actions-poetry@v2
       # - name: Setup Python
       #   uses: actions/setup-python@v2
       # - name: Get pip cache dir
