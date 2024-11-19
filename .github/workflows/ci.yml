@@ -104,7 +104,7 @@ jobs:
           COLOR: "yes"
         run: |
           make cov
-          python -m coverage xml
+          poetry run python -m coverage xml
       - name: Upload coverage
         uses: codecov/codecov-action@v1
         with:
