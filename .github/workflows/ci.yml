@@ -25,23 +25,6 @@ jobs:
         with:
           python-version: "3.13"
           cache: "poetry"
-      # - name: Setup Python
-      #   uses: actions/setup-python@v2
-      # - name: Get pip cache dir
-      #   id: pip-cache
-      #   run: |
-      #     echo "::set-output name=dir::$(pip cache dir)"    # - name: Cache
-      # - name: Cache PyPI
-      #   uses: actions/cache@v2
-      #   with:
-      #     key: pip-lint-${{ hashFiles('requirements-dev.txt') }}
-      #     path: ${{ steps.pip-cache.outputs.dir }}
-      #     restore-keys: |
-      #         pip-lint-
-      # - name: Install dependencies
-      #   uses: py-actions/py-dependency-install@v3.0.0
-      #   with:
-      #     path: requirements-dev.txt
       - name: Install dependencies
         run: |
           poetry install
@@ -52,13 +35,6 @@ jobs:
         run: poetry build
       - name: Check package metadata
         run: poetry check
-      # - name: Prepare twine checker
-      #   run: |
-      #     pip install -U twine wheel
-      #     python setup.py sdist bdist_wheel
-      # - name: Run twine checker
-      #   run: |
-      #     twine check dist/*
 
   test:
     name: Test
@@ -78,25 +54,6 @@ jobs:
         with:
           python-version: ${{ matrix.pyver }}
           cache: "poetry"
-      # - name: Setup Python ${{ matrix.pyver }}
-      #   uses: actions/setup-python@v2
-      #   with:
-      #     python-version: ${{ matrix.pyver }}
-      # - name: Get pip cache dir
-      #   id: pip-cache
-      #   run: |
-      #     echo "::set-output name=dir::$(pip cache dir)"    # - name: Cache
-      # - name: Cache PyPI
-      #   uses: actions/cache@v2
-      #   with:
-      #     key: pip-ci-${{ matrix.pyver }}-${{ hashFiles('requirements-dev.txt') }}
-      #     path: ${{ steps.pip-cache.outputs.dir }}
-      #     restore-keys: |
-      #       pip-ci-
-      # - name: Install dependencies
-      #   uses: py-actions/py-dependency-install@v2
-      #   with:
-      #     path: requirements-dev.txt
       - name: Install dependencies
         run: poetry install
       - name: Run unittests
@@ -136,11 +93,3 @@ jobs:
         env:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
         run: poetry publish --build
-      # - name: Make dists
-      #   run: python setup.py sdist bdist_wheel
-      # - name: PyPI upload
-      #   env:
-      #     TWINE_USERNAME: __token__
-      #     TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-      #   run: |
-      #     twine upload dist/*
