@@ -24,6 +24,9 @@ frequently searched is an ideal candidate for the use of a read-write lock.
 However, if updates become frequent then the data spends most of its time
 being exclusively locked and there is little, if any increase in concurrency.
 
+**Note:** a task that *acquires* the lock should be used for *releasing* it.
+Locking from one task and releasing from another one generates ``RuntimeError``.
+
 
 Implementation is almost direct port from this patch_.
 
