@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "aiorwlock"
-version = "1.4.0"
+version = "1.5.0a1"
 description = "Read write lock for asyncio."
 authors = ["Nikolay Novik <nickolainovik@gmail.com>"]
 license = "Apache-2.0"
@@ -16,8 +16,9 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Framework :: AsyncIO",
 ]
 
