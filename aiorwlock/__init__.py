@@ -3,7 +3,11 @@ import threading
 from collections import deque
 from typing import Any, Deque, List, Tuple
 
-__all__ = ('RWLock', '__version__')
+__all__ = ('RWLock',)
+
+
+def __dir__() -> tuple[str, ...]:
+    return __all__ + ('__version__',)
 
 
 def __getattr__(name: str) -> object:
