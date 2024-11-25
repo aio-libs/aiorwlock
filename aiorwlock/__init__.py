@@ -3,11 +3,7 @@ import threading
 from collections import deque
 from typing import Any, Deque, List, Tuple
 
-__all__ = ('RWLock',)
-
-
-def __dir__() -> tuple[str, ...]:
-    return __all__ + ('__version__',)
+__all__ = ('RWLock', '__version__')
 
 
 def __getattr__(name: str) -> object:
@@ -16,8 +12,8 @@ def __getattr__(name: str) -> object:
     if name == "__version__":
         from importlib.metadata import version
 
-        __version__ = version("aiorwlock")
-        return __version__
+        ver = __version__ = version("aiorwlock")  # type: ignore[name-defined]
+        return ver
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
