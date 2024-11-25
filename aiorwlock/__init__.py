@@ -11,6 +11,7 @@ def __getattr__(name: str) -> object:
 
     if name == "__version__":
         from importlib.metadata import version
+
         __version__ = version("aiorwlock")
         return __version__
 
