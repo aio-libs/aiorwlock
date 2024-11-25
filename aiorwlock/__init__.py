@@ -3,8 +3,18 @@ import threading
 from collections import deque
 from typing import Any, Deque, List, Tuple
 
-__version__ = "1.4.0"
-__all__ = ('RWLock',)
+__all__ = ('RWLock', '__version__')
+
+
+def __getattr__(name: str) -> object:
+    global __version__
+
+    if name == "__version__":
+        from importlib.metadata import version
+        __version__ = version("aiorwlock")
+        return __version__
+
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 # implementation based on:
@@ -145,8 +155,8 @@ class _RWLockCore:
 
         try:
             self._owning.remove((me, lock_type))
-        except ValueError:
-            raise RuntimeError('Cannot release an un-acquired lock')
+        except ValueError as exc:
+            raise RuntimeError('Cannot release an un-acquired lock') from exc
         if lock_type == self._RL:
             self._r_state -= 1
         else:
