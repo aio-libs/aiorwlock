@@ -36,7 +36,7 @@ pyroma = "4.3.2"
 pytest-asyncio = "1.0.0"
 pytest-cov = "6.2.1"
 pytest = "8.4.1"
-coverage = "^7.9.1"
+coverage = "^7.9.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
