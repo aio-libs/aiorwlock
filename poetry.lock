@@ -726,14 +726,14 @@ files = [
 
 [[package]]
 name = "pyroma"
-version = "4.3.3"
+version = "5.0"
 description = "Test your project's packaging friendliness"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "pyroma-4.3.3-py3-none-any.whl", hash = "sha256:6b3e0aca92450914b240c1905b1030fa51446a1dbdf186fea055a778da506155"},
-    {file = "pyroma-4.3.3.tar.gz", hash = "sha256:62c6af3a8da038e924644dd9c0b5da5f720818c67d914eb48bbfa3ce3d95439b"},
+    {file = "pyroma-5.0-py3-none-any.whl", hash = "sha256:dabe6ad75e362b56ba189982510fd928ca8aecb8cb21ee18e927c2acf6dbf167"},
+    {file = "pyroma-5.0.tar.gz", hash = "sha256:20b28f5ad08d2588618ac3a2f0a7ba7a4febe6aa514963e4211cfa6d2ad81eb5"},
 ]
 
 [package.dependencies]
@@ -742,11 +742,11 @@ docutils = "*"
 packaging = "*"
 pygments = "*"
 requests = "*"
-setuptools = ">=42"
+setuptools = ">=61"
 trove-classifiers = ">=2022.6.26"
 
 [package.extras]
-test = ["pytest", "setuptools (>=60)", "zest.releaser[recommended]"]
+test = ["flit-core (>=3.4,<4)", "pytest", "setuptools (>=60)", "zest.releaser[recommended]"]
 
 [[package]]
 name = "pytest"
@@ -1032,4 +1032,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9"
-content-hash = "13986fb2aafd2665c006ec9906be0a8c9a26a704430b52243fb2966ad482b5c9"
+content-hash = "75bcf9852197154d3a6af2f3e34416f7bd6c69b843f44f6a0fe0ded2c3a163e8"
