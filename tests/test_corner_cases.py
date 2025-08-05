@@ -1,5 +1,6 @@
 import asyncio
 import contextlib
+from typing import Any, Generator
 
 import pytest
 
@@ -9,7 +10,9 @@ ensure_future = asyncio.ensure_future
 
 
 @contextlib.contextmanager
-def should_fail(timeout, loop):
+def should_fail(
+    timeout: float, loop: asyncio.AbstractEventLoop
+) -> Generator[None, Any, None]:
     task = asyncio.current_task(loop)
 
     handle = loop.call_later(timeout, task.cancel)
@@ -19,12 +22,12 @@ def should_fail(timeout, loop):
         handle.cancel()
         return
     else:
-        msg = f'Inner task expected to be cancelled: {task}'
+        msg = f"Inner task expected to be cancelled: {task}"
         pytest.fail(msg)
 
 
 @pytest.mark.asyncio
-async def test_get_write_then_read(loop):
+async def test_get_write_then_read(loop: asyncio.AbstractEventLoop) -> None:
     rwlock = RWLock()
 
     rl = rwlock.reader
@@ -39,7 +42,9 @@ async def test_get_write_then_read(loop):
 
 
 @pytest.mark.asyncio
-async def test_get_write_then_read_and_write_again(loop):
+async def test_get_write_then_read_and_write_again(
+    loop: asyncio.AbstractEventLoop,
+) -> None:
     rwlock = RWLock()
     rl = rwlock.reader
     wl = rwlock.writer
@@ -52,7 +57,7 @@ async def test_get_write_then_read_and_write_again(loop):
         with should_fail(0.1, loop):
             async with wl:
                 assert wl.locked
-                writes.append('should not be here')
+                writes.append("should not be here")
 
     ensure_future(get_write_lock())
 
@@ -68,7 +73,7 @@ async def test_get_write_then_read_and_write_again(loop):
 
 
 @pytest.mark.asyncio
-async def test_writers_deadlock(loop):
+async def test_writers_deadlock(loop: asyncio.AbstractEventLoop) -> None:
     rwlock = RWLock()
     rl = rwlock.reader
     wl = rwlock.writer
@@ -84,7 +89,7 @@ async def test_writers_deadlock(loop):
     # See asyncio.Lock deadlock issue:
     #   https://github.com/python/cpython/pull/1031
 
-    async def coro():
+    async def coro() -> None:
         async with wl:
             assert wl.locked
             await asyncio.sleep(0.2, loop)
@@ -106,12 +111,12 @@ async def test_writers_deadlock(loop):
 
 
 @pytest.mark.asyncio
-async def test_readers_cancel(loop):
+async def test_readers_cancel(loop: asyncio.AbstractEventLoop) -> None:
     rwlock = RWLock()
     rl = rwlock.reader
     wl = rwlock.writer
 
-    async def coro(lock):
+    async def coro(lock: RWLock):
         async with lock:
             assert lock.locked
             await asyncio.sleep(0.2, loop)
@@ -132,11 +137,11 @@ async def test_readers_cancel(loop):
 
 
 @pytest.mark.asyncio
-async def test_canceled_inside_acquire(loop):
+async def test_canceled_inside_acquire(loop: asyncio.AbstractEventLoop) -> None:
     rwlock = RWLock()
     rl = rwlock.reader
 
-    async def coro(lock):
+    async def coro(lock: RWLock):
         async with lock:
             pass
 
@@ -153,24 +158,24 @@ async def test_canceled_inside_acquire(loop):
 
 
 @pytest.mark.asyncio
-async def test_race_multiple_writers(loop):
+async def test_race_multiple_writers(loop: asyncio.AbstractEventLoop) -> None:
     seq = []
 
-    async def write_wait(lock):
+    async def write_wait(lock: RWLock):
         async with lock.reader:
             await asyncio.sleep(0.1)
-            seq.append('READ')
+            seq.append("READ")
         async with lock.writer:
-            seq.append('START1')
+            seq.append("START1")
             await asyncio.sleep(0.1)
-            seq.append('FIN1')
+            seq.append("FIN1")
 
-    async def write(lock):
+    async def write(lock: RWLock):
         async with lock.writer:
-            seq.append('START2')
+            seq.append("START2")
             await asyncio.sleep(0.1)
-            seq.append('FIN2')
+            seq.append("FIN2")
 
     lock = RWLock(fast=True)
     await asyncio.gather(write_wait(lock), write(lock))
-    assert seq == ['READ', 'START2', 'FIN2', 'START1', 'FIN1']
+    assert seq == ["READ", "START2", "FIN2", "START1", "FIN1"]

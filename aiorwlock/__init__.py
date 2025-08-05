@@ -3,7 +3,7 @@ import threading
 from collections import deque
 from typing import Any, Deque, List, Tuple
 
-__all__ = ('RWLock', '__version__')
+__all__ = ("RWLock", "__version__")
 
 
 def __getattr__(name: str) -> object:
@@ -30,7 +30,19 @@ class _RWLockCore:
     _WL = 2
     _loop = None
 
-    def __init__(self, fast: bool):
+    __slots__ = (
+        "_RL",
+        "_WL",
+        "_loop",
+        "_do_yeild",
+        "_read_waiters",
+        "_write_waiters",
+        "_r_state",
+        "_w_state",
+        "_owning",
+    )
+
+    def __init__(self, fast: bool) -> None:
         self._do_yield = not fast
         self._read_waiters: Deque[asyncio.Future[None]] = deque()
         self._write_waiters: Deque[asyncio.Future[None]] = deque()
@@ -38,6 +50,10 @@ class _RWLockCore:
         self._w_state: int = 0
         # tasks will be few, so a list is not inefficient
         self._owning: List[Tuple[asyncio.Task[Any], int]] = []
+
+    # TODO: There is a Bug when different Loops are in use with using RWLocks
+    # However this might have to do with version differences
+    # SEE: https://github.com/aio-libs/aiorwlock/issues/468
 
     def _get_loop(self) -> asyncio.AbstractEventLoop:
         """
@@ -51,7 +67,7 @@ class _RWLockCore:
                 if self._loop is None:
                     self._loop = loop
         if loop is not self._loop:
-            raise RuntimeError(f'{self!r} is bound to a different event loop')
+            raise RuntimeError(f"{self!r} is bound to a different event loop")
         return loop
 
     @property
@@ -82,11 +98,7 @@ class _RWLockCore:
             await self._yield_after_acquire(self._RL)
             return True
 
-        if (
-            not self._write_waiters
-            and self._r_state >= 0
-            and self._w_state == 0
-        ):
+        if not self._write_waiters and self._r_state >= 0 and self._w_state == 0:
             self._r_state += 1
             self._owning.append((me, self._RL))
             await self._yield_after_acquire(self._RL)
@@ -120,7 +132,7 @@ class _RWLockCore:
             return True
         elif (me, self._RL) in self._owning:
             if self._r_state > 0:
-                raise RuntimeError('Cannot upgrade RWLock from read to write')
+                raise RuntimeError("Cannot upgrade RWLock from read to write")
 
         if self._r_state == 0 and self._w_state == 0:
             self._w_state += 1
@@ -157,7 +169,7 @@ class _RWLockCore:
         try:
             self._owning.remove((me, lock_type))
         except ValueError as exc:
-            raise RuntimeError('Cannot release an un-acquired lock') from exc
+            raise RuntimeError("Cannot release an un-acquired lock") from exc
         if lock_type == self._RL:
             self._r_state -= 1
         else:
@@ -186,10 +198,11 @@ class _RWLockCore:
 
 
 class _ContextManagerMixin:
+    __slots__ = ()
+
     def __enter__(self) -> None:
-        raise RuntimeError(
-            '"await" should be used as context manager expression'
-        )
+        # TODO: This Error Should really hint at either "async with" or "await" instead of just "await"
+        raise RuntimeError('"await" should be used as context manager expression')
 
     def __exit__(self, *args: Any) -> None:
         # This must exist because __enter__ exists, even though that
@@ -214,41 +227,51 @@ class _ContextManagerMixin:
 
 # Lock objects to access the _RWLockCore in reader or writer mode
 class _ReaderLock(_ContextManagerMixin):
+    __slots__ = ("_lock",)
+
     def __init__(self, lock: _RWLockCore) -> None:
         self._lock = lock
 
     @property
     def locked(self) -> bool:
+        """Determines wether or not the reader lock is owned"""
         return self._lock.read_locked
 
     async def acquire(self) -> None:
+        """acquires the reading lock"""
         await self._lock.acquire_read()
 
     def release(self) -> None:
+        """releases the reading lock"""
         self._lock.release_read()
 
     def __repr__(self) -> str:
-        status = 'locked' if self._lock._r_state > 0 else 'unlocked'
-        return f'<ReaderLock: [{status}]>'
+        status = "locked" if self._lock._r_state > 0 else "unlocked"
+        return f"<ReaderLock: [{status}]>"
 
 
 class _WriterLock(_ContextManagerMixin):
-    def __init__(self, lock: _RWLockCore):
+    __slots__ = ("_lock",)
+
+    def __init__(self, lock: _RWLockCore) -> None:
         self._lock = lock
 
     @property
     def locked(self) -> bool:
+        """determines wether or not writing lock is owned"""
         return self._lock.write_locked
 
     async def acquire(self) -> None:
+        """acquires the writing lock"""
         await self._lock.acquire_write()
 
     def release(self) -> None:
+        """releases the writing lock"""
         self._lock.release_write()
 
     def __repr__(self) -> str:
-        status = 'locked' if self._lock._w_state > 0 else 'unlocked'
-        return f'<WriterLock: [{status}]>'
+        status = "locked" if self._lock._w_state > 0 else "unlocked"
+        return f"<WriterLock: [{status}]>"
 
 
 class RWLock:
@@ -259,6 +282,8 @@ class RWLock:
     """
 
     core = _RWLockCore
+
+    __slots__ = ("core", "_reader_lock", "_writer_lock",)
 
     def __init__(self, *, fast: bool = False) -> None:
         core = self.core(fast)
@@ -282,4 +307,4 @@ class RWLock:
     def __repr__(self) -> str:
         rl = self.reader_lock.__repr__()
         wl = self.writer_lock.__repr__()
-        return f'<RWLock: {rl} {wl}>'
+        return f"<RWLock: {rl} {wl}>"
