@@ -3,13 +3,13 @@ import asyncio
 import aiorwlock
 
 
-async def go():
+async def go() -> None:
     rwlock = aiorwlock.RWLock()
 
     # acquire reader lock
     await rwlock.reader_lock.acquire()
     try:
-        print('inside reader lock')
+        print("inside reader lock")
 
         await asyncio.sleep(0.1)
     finally:
@@ -18,7 +18,7 @@ async def go():
     # acquire writer lock
     await rwlock.writer_lock.acquire()
     try:
-        print('inside writer lock')
+        print("inside writer lock")
 
         await asyncio.sleep(0.1)
     finally:
