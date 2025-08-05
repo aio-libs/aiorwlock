@@ -34,7 +34,7 @@ class _RWLockCore:
         "_RL",
         "_WL",
         "_loop",
-        "_do_yeild",
+        "_do_yield",
         "_read_waiters",
         "_write_waiters",
         "_r_state",
