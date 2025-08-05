@@ -1,7 +1,7 @@
 import asyncio
 import threading
 from collections import deque
-from typing import Any, Deque, List, Tuple
+from typing import Any, Deque, List, Tuple, Optional
 
 __all__ = ("RWLock", "__version__")
 
@@ -28,18 +28,16 @@ _global_lock = threading.Lock()
 class _RWLockCore:
     _RL = 1
     _WL = 2
-    _loop = None
+    
 
     __slots__ = (
-        "_RL",
-        "_WL",
-        "_loop",
         "_do_yield",
         "_read_waiters",
         "_write_waiters",
         "_r_state",
         "_w_state",
         "_owning",
+        "_loop"
     )
 
     def __init__(self, fast: bool) -> None:
@@ -50,6 +48,7 @@ class _RWLockCore:
         self._w_state: int = 0
         # tasks will be few, so a list is not inefficient
         self._owning: List[Tuple[asyncio.Task[Any], int]] = []
+        self._loop: Optional[asyncio.AbstractEventLoop] = None
 
     # TODO: There is a Bug when different Loops are in use with using RWLocks
     # However this might have to do with version differences
@@ -283,7 +282,7 @@ class RWLock:
 
     core = _RWLockCore
 
-    __slots__ = ("core", "_reader_lock", "_writer_lock",)
+    __slots__ = ("_reader_lock", "_writer_lock",)
 
     def __init__(self, *, fast: bool = False) -> None:
         core = self.core(fast)

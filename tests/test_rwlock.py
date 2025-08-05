@@ -52,33 +52,38 @@ async def _wait():
 
 
 @pytest.mark.asyncio
-async def test_ctor_loop_reader(loop: asyncio.AbstractEventLoop) -> None:
+async def test_ctor_loop_reader() -> None:
+    loop = asyncio.get_event_loop()
     rwlock = RWLock().reader_lock
     assert rwlock._lock._get_loop() is loop
 
 
 @pytest.mark.asyncio
-async def test_ctor_noloop_reader(loop: asyncio.AbstractEventLoop) -> None:
+async def test_ctor_noloop_reader() -> None:
+    loop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
     rwlock = RWLock().reader_lock
     assert rwlock._lock._get_loop() is loop
 
 
 @pytest.mark.asyncio
-async def test_ctor_loop_writer(loop: asyncio.AbstractEventLoop) -> None:
+async def test_ctor_loop_writer() -> None:
+    loop = asyncio.get_event_loop()
     rwlock = RWLock().writer_lock
     assert rwlock._lock._get_loop() is loop
 
 
 @pytest.mark.asyncio
-async def test_ctor_noloop_writer(loop: asyncio.AbstractEventLoop) -> None:
+async def test_ctor_noloop_writer() -> None:
+    loop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
     rwlock = RWLock().writer_lock
     assert rwlock._lock._get_loop() is loop
 
 
 @pytest.mark.asyncio
-async def test_repr(loop: asyncio.AbstractEventLoop) -> None:
+async def test_repr() -> None:
+    loop = asyncio.get_event_loop()
     rwlock = RWLock()
     assert "RWLock" in rwlock.__repr__()
     assert "WriterLock: [unlocked" in rwlock.__repr__()
@@ -98,14 +103,15 @@ async def test_repr(loop: asyncio.AbstractEventLoop) -> None:
 
 
 @pytest.mark.asyncio
-async def test_release_unlocked(loop: asyncio.AbstractEventLoop) -> None:
+async def test_release_unlocked() -> None:
+    loop = asyncio.get_event_loop()
     rwlock = RWLock()
     with pytest.raises(RuntimeError):
         rwlock.reader_lock.release()
 
 
 @pytest.mark.asyncio
-async def test_many_readers(loop: asyncio.AbstractEventLoop, fast_track: bool) -> None:
+async def test_many_readers(fast_track: bool) -> None:
     rwlock = RWLock(fast=fast_track)
     N = 5
     locked = []
@@ -127,7 +133,8 @@ async def test_many_readers(loop: asyncio.AbstractEventLoop, fast_track: bool) -
 
 
 @pytest.mark.asyncio
-async def test_read_upgrade_write_release(loop: asyncio.AbstractEventLoop) -> None:
+async def test_read_upgrade_write_release() -> None:
+    loop = asyncio.get_event_loop()
     rwlock = RWLock()
     await rwlock.writer_lock.acquire()
     await rwlock.reader_lock.acquire()
@@ -151,9 +158,7 @@ async def test_read_upgrade_write_release(loop: asyncio.AbstractEventLoop) -> No
 
 
 @pytest.mark.asyncio
-async def test_reader_recursion(
-    loop: asyncio.AbstractEventLoop, fast_track: bool
-) -> None:
+async def test_reader_recursion(fast_track: bool) -> None:
     rwlock = RWLock(fast=fast_track)
     N = 5
     locked = []
@@ -179,9 +184,7 @@ async def test_reader_recursion(
 
 
 @pytest.mark.asyncio
-async def test_writer_recursion(
-    loop: asyncio.AbstractEventLoop, fast_track: bool
-) -> None:
+async def test_writer_recursion(fast_track: bool) -> None:
     rwlock = RWLock(fast=fast_track)
     N = 5
     locked = []
@@ -207,9 +210,7 @@ async def test_writer_recursion(
 
 
 @pytest.mark.asyncio
-async def test_writer_then_reader_recursion(
-    loop: asyncio.AbstractEventLoop, fast_track: bool
-) -> None:
+async def test_writer_then_reader_recursion(fast_track: bool) -> None:
     rwlock = RWLock(fast=fast_track)
     N = 5
     locked = []
@@ -235,7 +236,8 @@ async def test_writer_then_reader_recursion(
 
 
 @pytest.mark.asyncio
-async def test_writer_recursion_fail(loop: asyncio.AbstractEventLoop) -> None:
+async def test_writer_recursion_fail() -> None:
+    loop = asyncio.get_event_loop()
     rwlock = RWLock()
     N = 5
     locked = []
@@ -254,9 +256,7 @@ async def test_writer_recursion_fail(loop: asyncio.AbstractEventLoop) -> None:
 
 
 @pytest.mark.asyncio
-async def test_readers_writers(
-    loop: asyncio.AbstractEventLoop, fast_track: bool
-) -> None:
+async def test_readers_writers(fast_track: bool) -> None:
     rwlock = RWLock(fast=fast_track)
     N = 5
     rlocked = []
@@ -309,7 +309,8 @@ async def test_readers_writers(
 
 
 @pytest.mark.asyncio
-async def test_writer_success(loop: asyncio.AbstractEventLoop) -> None:
+async def test_writer_success() -> None:
+    loop = asyncio.get_event_loop()
     # Verify that a writer can get access
     rwlock = RWLock()
     N = 5
@@ -355,7 +356,8 @@ async def test_writer_success(loop: asyncio.AbstractEventLoop) -> None:
 
 
 @pytest.mark.asyncio
-async def test_writer_success_fast(loop: asyncio.AbstractEventLoop) -> None:
+async def test_writer_success_fast() -> None:
+    loop = asyncio.get_event_loop()
     # Verify that a writer can get access
     rwlock = RWLock(fast=True)
     N = 5
@@ -402,7 +404,8 @@ async def test_writer_success_fast(loop: asyncio.AbstractEventLoop) -> None:
 
 
 @pytest.mark.asyncio
-async def test_writer_success_with_statement(loop: asyncio.AbstractEventLoop) -> None:
+async def test_writer_success_with_statement() -> None:
+    loop = asyncio.get_event_loop()
     # Verify that a writer can get access
     rwlock = RWLock()
     N = 5
@@ -441,9 +444,7 @@ async def test_writer_success_with_statement(loop: asyncio.AbstractEventLoop) ->
 
 
 @pytest.mark.asyncio
-async def test_raise_error_on_with_for_reader_lock(
-    loop: asyncio.AbstractEventLoop, fast_track: bool
-) -> None:
+async def test_raise_error_on_with_for_reader_lock(fast_track: bool) -> None:
     rwlock = RWLock(fast=fast_track)
     with pytest.raises(RuntimeError):
         with rwlock.reader_lock:
@@ -451,9 +452,7 @@ async def test_raise_error_on_with_for_reader_lock(
 
 
 @pytest.mark.asyncio
-async def test_raise_error_on_with_for_writer_lock(
-    loop: asyncio.AbstractEventLoop, fast_track: bool
-) -> None:
+async def test_raise_error_on_with_for_writer_lock(fast_track: bool) -> None:
     rwlock = RWLock(fast=fast_track)
     with pytest.raises(RuntimeError):
         with rwlock.writer_lock:
@@ -461,7 +460,7 @@ async def test_raise_error_on_with_for_writer_lock(
 
 
 @pytest.mark.asyncio
-async def test_read_locked(loop: asyncio.AbstractEventLoop, fast_track: bool) -> None:
+async def test_read_locked(fast_track: bool) -> None:
     rwlock = RWLock(fast=fast_track)
     assert not rwlock.reader_lock.locked
     async with rwlock.reader_lock:
@@ -469,7 +468,7 @@ async def test_read_locked(loop: asyncio.AbstractEventLoop, fast_track: bool) ->
 
 
 @pytest.mark.asyncio
-async def test_write_locked(loop: asyncio.AbstractEventLoop, fast_track: bool) -> None:
+async def test_write_locked(fast_track: bool) -> None:
     rwlock = RWLock(fast=fast_track)
     assert not rwlock.writer_lock.locked
     async with rwlock.writer_lock:
@@ -477,9 +476,8 @@ async def test_write_locked(loop: asyncio.AbstractEventLoop, fast_track: bool) -
 
 
 @pytest.mark.asyncio
-async def test_write_read_lock_multiple_tasks(
-    loop: asyncio.AbstractEventLoop, fast_track: bool
-) -> None:
+async def test_write_read_lock_multiple_tasks(fast_track: bool) -> None:
+    loop = asyncio.get_event_loop()
     rwlock = RWLock(fast=fast_track)
     rl = rwlock.reader
     wl = rwlock.writer
@@ -501,9 +499,7 @@ async def test_write_read_lock_multiple_tasks(
 
 
 @pytest.mark.asyncio
-async def test_read_context_manager(
-    loop: asyncio.AbstractEventLoop, fast_track: bool
-) -> None:
+async def test_read_context_manager(fast_track: bool) -> None:
     rwlock = RWLock(fast=fast_track)
     reader = rwlock.reader_lock
     assert not reader.locked
@@ -512,9 +508,7 @@ async def test_read_context_manager(
 
 
 @pytest.mark.asyncio
-async def test_write_context_manager(
-    loop: asyncio.AbstractEventLoop, fast_track: bool
-) -> None:
+async def test_write_context_manager(fast_track: bool) -> None:
     rwlock = RWLock(fast=fast_track)
     writer = rwlock.writer_lock
     assert not writer.locked
@@ -523,9 +517,7 @@ async def test_write_context_manager(
 
 
 @pytest.mark.asyncio
-async def test_await_read_lock(
-    loop: asyncio.AbstractEventLoop, fast_track: bool
-) -> None:
+async def test_await_read_lock(fast_track: bool) -> None:
     rwlock = RWLock(fast=fast_track)
     reader = rwlock.reader_lock
     assert not reader.locked
@@ -534,9 +526,7 @@ async def test_await_read_lock(
 
 
 @pytest.mark.asyncio
-async def test_await_write_lock(
-    loop: asyncio.AbstractEventLoop, fast_track: bool
-) -> None:
+async def test_await_write_lock(fast_track: bool) -> None:
     rwlock = RWLock(fast=fast_track)
     writer = rwlock.writer_lock
     assert not writer.locked
@@ -574,9 +564,7 @@ async def test_reader_ambiguous_loops(fast_track: bool) -> None:
         loop.close()
 
 
-def test_created_outside_of_coroutine(
-    event_loop: asyncio.AbstractEventLoop, fast_track: bool
-) -> None:
+def test_created_outside_of_coroutine(fast_track: bool) -> None:
     async def main() -> None:
         async with lock.reader_lock:
             pass
@@ -584,4 +572,4 @@ def test_created_outside_of_coroutine(
             pass
 
     lock = RWLock(fast=fast_track)
-    event_loop.run_until_complete(main())
+    asyncio.get_event_loop().run_until_complete(main())

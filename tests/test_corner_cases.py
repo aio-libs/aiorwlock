@@ -10,9 +10,8 @@ ensure_future = asyncio.ensure_future
 
 
 @contextlib.contextmanager
-def should_fail(
-    timeout: float, loop: asyncio.AbstractEventLoop
-) -> Generator[None, Any, None]:
+def should_fail(timeout: float) -> Generator[None, Any, None]:
+    loop = asyncio.get_running_loop()
     task = asyncio.current_task(loop)
 
     handle = loop.call_later(timeout, task.cancel)
@@ -27,7 +26,7 @@ def should_fail(
 
 
 @pytest.mark.asyncio
-async def test_get_write_then_read(loop: asyncio.AbstractEventLoop) -> None:
+async def test_get_write_then_read() -> None:
     rwlock = RWLock()
 
     rl = rwlock.reader
@@ -42,13 +41,11 @@ async def test_get_write_then_read(loop: asyncio.AbstractEventLoop) -> None:
 
 
 @pytest.mark.asyncio
-async def test_get_write_then_read_and_write_again(
-    loop: asyncio.AbstractEventLoop,
-) -> None:
+async def test_get_write_then_read_and_write_again() -> None:
+    loop = asyncio.get_event_loop()
     rwlock = RWLock()
     rl = rwlock.reader
     wl = rwlock.writer
-
     f = loop.create_future()
     writes = []
 
@@ -73,7 +70,8 @@ async def test_get_write_then_read_and_write_again(
 
 
 @pytest.mark.asyncio
-async def test_writers_deadlock(loop: asyncio.AbstractEventLoop) -> None:
+async def test_writers_deadlock() -> None:
+    loop = asyncio.get_event_loop()
     rwlock = RWLock()
     rl = rwlock.reader
     wl = rwlock.writer
@@ -111,7 +109,8 @@ async def test_writers_deadlock(loop: asyncio.AbstractEventLoop) -> None:
 
 
 @pytest.mark.asyncio
-async def test_readers_cancel(loop: asyncio.AbstractEventLoop) -> None:
+async def test_readers_cancel() -> None:
+    loop = asyncio.get_event_loop()
     rwlock = RWLock()
     rl = rwlock.reader
     wl = rwlock.writer
@@ -137,7 +136,7 @@ async def test_readers_cancel(loop: asyncio.AbstractEventLoop) -> None:
 
 
 @pytest.mark.asyncio
-async def test_canceled_inside_acquire(loop: asyncio.AbstractEventLoop) -> None:
+async def test_canceled_inside_acquire() -> None:
     rwlock = RWLock()
     rl = rwlock.reader
 
@@ -158,7 +157,7 @@ async def test_canceled_inside_acquire(loop: asyncio.AbstractEventLoop) -> None:
 
 
 @pytest.mark.asyncio
-async def test_race_multiple_writers(loop: asyncio.AbstractEventLoop) -> None:
+async def test_race_multiple_writers() -> None:
     seq = []
 
     async def write_wait(lock: RWLock):
