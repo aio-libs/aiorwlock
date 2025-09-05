@@ -35,7 +35,7 @@ mypy = "1.17.1"
 pyroma = "5.0"
 pytest-asyncio = "1.1.0"
 pytest-cov = "6.2.1"
-pytest = "8.4.1"
+pytest = "8.4.2"
 coverage = "^7.10.6"
 
 [build-system]
