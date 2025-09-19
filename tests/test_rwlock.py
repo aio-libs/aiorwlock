@@ -569,59 +569,23 @@ async def test_cross_event_loop_reader_race_condition():
     """
     Test for race condition where RWLock is shared across event loops.
 
-    This reproduces a bug scenario where:
-    1. RWLock is created and reader lock acquired on Event Loop A
-    2. RWLock is shared with Event Loop B which also acquires reader lock
-    3. One loop releases successfully, the other may fail due to internal state loop mismatch
-    4. This can leave the lock in an inconsistent and locked state
-
-    Expected behavior if bug is FIXED:
-    - acquire() should fail on other event loops (good)
-    - original release() should succeed (good)
-
-    Expected behavior if bug EXISTS:
-    - acquire() might succeed on other event loops (bad)
-    - release() might fail due to loop mismatch (bad)
+    Expected behavior: acquire() should fail on other event loops with
+    RuntimeError about different event loop binding, and original release()
+    should succeed.
     """
     import concurrent.futures
 
     lock = RWLock()
-    acquire_results = {}
-    acquire_errors = {}
-    release_results = {}
-    release_errors = {}
 
-    def run_on_new_loop(loop_name):
+    def run_on_new_loop():
         """Run RWLock operations on a new event loop"""
         new_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(new_loop)
 
         async def acquire_and_release():
-            acquired = False
-            try:
-                # Try to acquire reader lock - should fail if bug is fixed
+            # Should raise RuntimeError about different event loop
+            with pytest.raises(RuntimeError, match='event loop'):
                 await lock.reader_lock.acquire()
-                acquired = True
-                acquire_results[loop_name] = "acquired successfully (unexpected!)"
-
-                # Small delay to ensure timing
-                await asyncio.sleep(0.01)
-
-            except RuntimeError as e:
-                acquire_errors[loop_name] = str(e)
-                # This is expected if bug is fixed - acquire should fail
-
-            # Only try to release if we actually acquired
-            if acquired:
-                try:
-                    lock.reader_lock.release()
-                    # If we reach here, then some other thread managed to acquire a lock, which is bad
-                    # because when any other thread attempts to release, it will raise a RuntimeError
-                    # and leave the lock in a locked state.
-                    release_results[loop_name] = "released successfully"
-                except RuntimeError as e:
-                    release_errors[loop_name] = str(e)
-                    # This indicates the race condition bug
 
         try:
             new_loop.run_until_complete(acquire_and_release())
@@ -630,52 +594,20 @@ async def test_cross_event_loop_reader_race_condition():
 
     # First acquire reader lock on current event loop
     await lock.reader_lock.acquire()
-    original_release_success = False
-    original_release_error = None
 
     try:
         # Start operations on two separate event loops concurrently
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-            future1 = executor.submit(run_on_new_loop, "loop_b")
-            future2 = executor.submit(run_on_new_loop, "loop_c")
+            future1 = executor.submit(run_on_new_loop)
+            future2 = executor.submit(run_on_new_loop)
 
-            # Wait for both to complete
+            # Wait for both to complete - they should both raise as expected
             future1.result(timeout=5)
             future2.result(timeout=5)
 
     finally:
-        # Release the original lock - this should always work if no race condition
-        try:
-            lock.reader_lock.release()
-            original_release_success = True
-        except Exception as e:
-            original_release_error = str(e)
-
-    # Analyze the behavior:
-    unexpected_acquires = len(acquire_results) > 0  # Should be 0 if bug is fixed
-    acquire_loop_errors = any("different event loop" in str(error) for error in acquire_errors.values())
-    release_loop_errors = any("different event loop" in str(error) for error in release_errors.values())
-    original_release_failed = not original_release_success
-
-    if unexpected_acquires or release_loop_errors or original_release_failed:
-        # Race condition detected
-        pytest.fail(
-            f"Cross-event-loop race condition detected:\n"
-            f"- Unexpected successful acquires: {unexpected_acquires} (should be False)\n"
-            f"- Release errors on wrong loops: {release_loop_errors} (should be False)\n"
-            f"- Original release failed: {original_release_failed} (should be False)\n"
-            f"Details: acquire_results={acquire_results}, release_errors={release_errors}, "
-            f"original_error={original_release_error}"
-        )
-
-    # If we get here, the behavior is correct:
-    # - All acquire attempts on other loops should have failed (acquire_errors should have 2 entries)
-    # - No releases should have failed due to loop errors
-    # - Original release should have succeeded
-    assert len(acquire_errors) == 2, f"Expected 2 acquire errors, got {len(acquire_errors)}"
-    assert acquire_loop_errors, "Expected acquire errors to be about event loop binding"
-    assert len(release_errors) == 0, f"Expected no release errors, got {release_errors}"
-    assert original_release_success, f"Expected original release to succeed, got error: {original_release_error}"
+        # Release the original lock - this should always work
+        lock.reader_lock.release()
 
 
 @pytest.mark.asyncio
@@ -683,9 +615,9 @@ async def test_cross_event_loop_writer_race_condition():
     """
     Test writer lock race condition across event loops.
 
-    Scenario: Writer lock acquired/released on thread A (pins lock to that loop),
-    then thread B attempts acquire - should fail but currently succeeds and
-    gets stuck on release.
+    Scenario: Writer lock acquired/released on thread A (pins lock to that
+    loop), then thread B attempts acquire - should fail with RuntimeError
+    about different event loop binding.
     """
     import concurrent.futures
 
@@ -695,24 +627,14 @@ async def test_cross_event_loop_writer_race_condition():
     await lock.writer_lock.acquire()
     lock.writer_lock.release()
 
-    acquire_success = False
-    release_error = None
-
     def run_on_new_loop():
         new_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(new_loop)
 
         async def acquire_and_release():
-            nonlocal acquire_success, release_error
-            try:
+            # This should raise RuntimeError about different event loop
+            with pytest.raises(RuntimeError, match='event loop'):
                 await lock.writer_lock.acquire()
-                acquire_success = True  # Should not reach here if bug is fixed
-                lock.writer_lock.release()
-            except RuntimeError as e:
-                if acquire_success:
-                    # Failed on release - indicates race condition
-                    release_error = str(e)
-                # If failed on acquire, that's expected behavior
 
         try:
             new_loop.run_until_complete(acquire_and_release())
@@ -721,11 +643,3 @@ async def test_cross_event_loop_writer_race_condition():
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
         executor.submit(run_on_new_loop).result(timeout=5)
-
-    if acquire_success or release_error:
-        pytest.fail(
-            f"Writer cross-event-loop race condition detected: "
-            f"acquire_success={acquire_success}, release_error={release_error}"
-        )
-
-    # If we get here, acquire properly failed (expected behavior)
