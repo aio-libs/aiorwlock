@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 
@@ -7,5 +9,8 @@ def fast_track(request):
 
 
 @pytest.fixture
-def loop(event_loop):
-    return event_loop
+def loop():
+    """Return an event loop for testing."""
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
