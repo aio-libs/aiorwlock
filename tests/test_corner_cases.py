@@ -177,7 +177,7 @@ async def test_race_multiple_writers(loop):
 
 
 @pytest.mark.asyncio
-async def test_cancelled_reader_waiters():
+async def test_cancelled_reader_waiters() -> None:
     rwlock = RWLock()
     rl = rwlock.reader
     wl = rwlock.writer
@@ -190,7 +190,7 @@ async def test_cancelled_reader_waiters():
     # C gets cancelled while waiting for A to release the lock
     # B should proceed without deadlock
 
-    async def read_task():
+    async def read_task() -> None:
         nonlocal acquired
         async with rl:
             acquired = True
@@ -205,10 +205,8 @@ async def test_cancelled_reader_waiters():
         task_c.cancel()
         await asyncio.sleep(0.1)
 
-    try:
+    with pytest.raises(asyncio.CancelledError):
         await task_c
-    except asyncio.CancelledError:
-        pass  # Expected
 
     # Task B should complete without deadlock
     await asyncio.wait_for(task_b, timeout=1.0)
@@ -218,7 +216,7 @@ async def test_cancelled_reader_waiters():
 
 
 @pytest.mark.asyncio
-async def test_cancelled_writer_waiters():
+async def test_cancelled_writer_waiters() -> None:
     rwlock = RWLock()
     rl = rwlock.reader
     wl = rwlock.writer
@@ -231,7 +229,7 @@ async def test_cancelled_writer_waiters():
     # C gets cancelled while waiting for A to release the lock
     # B should proceed without deadlock
 
-    async def write_task():
+    async def write_task() -> None:
         nonlocal acquired
         async with wl:
             acquired = True
@@ -246,10 +244,8 @@ async def test_cancelled_writer_waiters():
         task_c.cancel()
         await asyncio.sleep(0.1)
 
-    try:
+    with pytest.raises(asyncio.CancelledError):
         await task_c
-    except asyncio.CancelledError:
-        pass  # Expected
 
     # Task B should complete without deadlock
     await asyncio.wait_for(task_b, timeout=1.0)
