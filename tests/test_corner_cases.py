@@ -174,3 +174,81 @@ async def test_race_multiple_writers(loop):
     lock = RWLock(fast=True)
     await asyncio.gather(write_wait(lock), write(lock))
     assert seq == ['READ', 'START2', 'FIN2', 'START1', 'FIN1']
+
+
+@pytest.mark.asyncio
+async def test_cancelled_reader_waiters() -> None:
+    rwlock = RWLock()
+    rl = rwlock.reader
+    wl = rwlock.writer
+    acquired = False
+
+    # Scenario:
+    # - task A (this) acquires write lock
+    # - tasks B, C wait for read lock
+    #
+    # C gets cancelled while waiting for A to release the lock
+    # B should proceed without deadlock
+
+    async def read_task() -> None:
+        nonlocal acquired
+        async with rl:
+            acquired = True
+
+    async with wl:
+        assert wl.locked
+        # Create reader tasks that will wait
+        task_b = ensure_future(read_task())
+        task_c = ensure_future(read_task())
+        await asyncio.sleep(0.1)
+        # Cancel one of the waiting readers
+        task_c.cancel()
+        await asyncio.sleep(0.1)
+
+    with pytest.raises(asyncio.CancelledError):
+        await task_c
+
+    # Task B should complete without deadlock
+    await asyncio.wait_for(task_b, timeout=1.0)
+    assert acquired
+    assert not rl.locked
+    assert not wl.locked
+
+
+@pytest.mark.asyncio
+async def test_cancelled_writer_waiters() -> None:
+    rwlock = RWLock()
+    rl = rwlock.reader
+    wl = rwlock.writer
+    acquired = False
+
+    # Scenario:
+    # - task A (this) acquires read lock
+    # - tasks B, C wait for write lock
+    #
+    # C gets cancelled while waiting for A to release the lock
+    # B should proceed without deadlock
+
+    async def write_task() -> None:
+        nonlocal acquired
+        async with wl:
+            acquired = True
+
+    async with rl:
+        assert rl.locked
+        # Create writer tasks that will wait
+        task_b = ensure_future(write_task())
+        task_c = ensure_future(write_task())
+        await asyncio.sleep(0.1)
+        # Cancel one waiting writer
+        task_c.cancel()
+        await asyncio.sleep(0.1)
+
+    with pytest.raises(asyncio.CancelledError):
+        await task_c
+
+    # Task B should complete without deadlock
+    await asyncio.wait_for(task_b, timeout=1.0)
+    assert acquired
+    assert not rl.locked
+    assert not wl.locked

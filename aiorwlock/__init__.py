@@ -101,7 +101,9 @@ class _RWLockCore:
             return True
 
         except asyncio.CancelledError:
-            self._r_state -= 1
+            # Only decrement if the future was resolved (we were woken up)
+            if fut.done() and not fut.cancelled():
+                self._r_state -= 1
             self._wake_up()
             raise
 
@@ -138,7 +140,9 @@ class _RWLockCore:
             return True
 
         except asyncio.CancelledError:
-            self._w_state -= 1
+            # Only decrement if the future was resolved (we were woken up)
+            if fut.done() and not fut.cancelled():
+                self._w_state -= 1
             self._wake_up()
             raise
 
