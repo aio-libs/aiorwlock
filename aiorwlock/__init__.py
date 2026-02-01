@@ -1,7 +1,7 @@
 import asyncio
 import threading
 from collections import deque
-from typing import Any, Deque, List, Tuple
+from typing import Any, Deque, List, Optional, Tuple
 
 __all__ = ('RWLock', '__version__')
 
@@ -28,9 +28,18 @@ _global_lock = threading.Lock()
 class _RWLockCore:
     _RL = 1
     _WL = 2
-    _loop = None
 
-    def __init__(self, fast: bool):
+    __slots__ = (
+        "_do_yield",
+        "_read_waiters",
+        "_write_waiters",
+        "_r_state",
+        "_w_state",
+        "_owning",
+        "_loop",
+    )
+
+    def __init__(self, fast: bool) -> None:
         self._do_yield = not fast
         self._read_waiters: Deque[asyncio.Future[None]] = deque()
         self._write_waiters: Deque[asyncio.Future[None]] = deque()
@@ -38,6 +47,8 @@ class _RWLockCore:
         self._w_state: int = 0
         # tasks will be few, so a list is not inefficient
         self._owning: List[Tuple[asyncio.Task[Any], int]] = []
+        self._loop: Optional[asyncio.AbstractEventLoop] = None
+
 
     def _get_loop(self) -> asyncio.AbstractEventLoop:
         """
@@ -186,6 +197,7 @@ class _RWLockCore:
 
 
 class _ContextManagerMixin:
+    __slots__ = ()
     def __enter__(self) -> None:
         raise RuntimeError(
             '"await" should be used as context manager expression'
@@ -214,6 +226,8 @@ class _ContextManagerMixin:
 
 # Lock objects to access the _RWLockCore in reader or writer mode
 class _ReaderLock(_ContextManagerMixin):
+    __slots__ = ("_lock",)
+
     def __init__(self, lock: _RWLockCore) -> None:
         self._lock = lock
 
@@ -233,6 +247,8 @@ class _ReaderLock(_ContextManagerMixin):
 
 
 class _WriterLock(_ContextManagerMixin):
+    __slots__ = ("_lock",)
+
     def __init__(self, lock: _RWLockCore):
         self._lock = lock
 
@@ -259,6 +275,7 @@ class RWLock:
     """
 
     core = _RWLockCore
+    __slots__ = ("_reader_lock", "_writer_lock",)
 
     def __init__(self, *, fast: bool = False) -> None:
         core = self.core(fast)
