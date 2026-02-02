@@ -204,6 +204,7 @@ class _RWLockCore:
 
 class _ContextManagerMixin:
     __slots__ = ()
+
     def __enter__(self) -> None:
         raise RuntimeError(
             '"await" should be used as context manager expression'
