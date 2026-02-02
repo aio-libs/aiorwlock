@@ -39,7 +39,7 @@ class _RWLockCore:
         "_loop",
     )
 
-    def __init__(self, fast: bool) -> None:
+    def __init__(self, fast: bool):
         self._do_yield = not fast
         self._read_waiters: Deque[asyncio.Future[None]] = deque()
         self._write_waiters: Deque[asyncio.Future[None]] = deque()
