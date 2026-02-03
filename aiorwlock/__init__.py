@@ -39,7 +39,7 @@ class _RWLockCore:
         "_loop",
     )
 
-    def __init__(self, fast: bool) -> None:
+    def __init__(self, fast: bool):
         self._do_yield = not fast
         self._read_waiters: Deque[asyncio.Future[None]] = deque()
         self._write_waiters: Deque[asyncio.Future[None]] = deque()
@@ -83,7 +83,8 @@ class _RWLockCore:
 
     # Acquire the lock in read mode.
     async def acquire_read(self) -> bool:
-        me = asyncio.current_task()
+        loop = self._get_loop()
+        me = asyncio.current_task(loop)
         assert me is not None  # nosec
 
         if (me, self._RL) in self._owning or (me, self._WL) in self._owning:
@@ -98,7 +99,7 @@ class _RWLockCore:
             await self._yield_after_acquire(self._RL)
             return True
 
-        fut = self._get_loop().create_future()
+        fut = loop.create_future()
         self._read_waiters.append(fut)
         try:
             await fut
@@ -106,7 +107,9 @@ class _RWLockCore:
             return True
 
         except asyncio.CancelledError:
-            self._r_state -= 1
+            # Only decrement if the future was resolved (we were woken up)
+            if fut.done() and not fut.cancelled():
+                self._r_state -= 1
             self._wake_up()
             raise
 
@@ -116,7 +119,8 @@ class _RWLockCore:
     # Acquire the lock in write mode.  A 'waiting' count is maintained,
     # ensuring that 'readers' will yield to writers.
     async def acquire_write(self) -> bool:
-        me = asyncio.current_task()
+        loop = self._get_loop()
+        me = asyncio.current_task(loop)
         assert me is not None  # nosec
 
         if (me, self._WL) in self._owning:
@@ -134,7 +138,7 @@ class _RWLockCore:
             await self._yield_after_acquire(self._WL)
             return True
 
-        fut = self._get_loop().create_future()
+        fut = loop.create_future()
         self._write_waiters.append(fut)
         try:
             await fut
@@ -142,7 +146,9 @@ class _RWLockCore:
             return True
 
         except asyncio.CancelledError:
-            self._w_state -= 1
+            # Only decrement if the future was resolved (we were woken up)
+            if fut.done() and not fut.cancelled():
+                self._w_state -= 1
             self._wake_up()
             raise
 
