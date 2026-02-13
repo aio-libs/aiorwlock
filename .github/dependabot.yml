@@ -1,12 +1,11 @@
 version: 2
 updates:
-- package-ecosystem: pip
-  directory: "/"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  ignore:
-  - dependency-name: uvloop
-    versions:
-    - 0.15.0
-    - 0.15.1
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: daily
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
