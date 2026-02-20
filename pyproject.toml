@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "aiorwlock"
-version = "1.5.0"
+version = "1.5.1"
 description = "Read write lock for asyncio."
 authors = ["Nikolay Novik <nickolainovik@gmail.com>"]
 license = "Apache-2.0"

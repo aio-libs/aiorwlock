@@ -1,7 +1,7 @@
 Changes
 -------
 
-1.5.0 (2026-02-20)
+1.5.1 (2026-02-20)
 ^^^^^^^^^^^^^^^^^^
 
 * Fixed a cross-event-loop race condition in lock acquisition.
