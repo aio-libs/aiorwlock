@@ -1,6 +1,13 @@
 Changes
 -------
 
+1.5.0 (2026-02-20)
+^^^^^^^^^^^^^^^^^^
+
+* Fixed a cross-event-loop race condition in lock acquisition.
+* Fixed a deadlock that could occur when tasks are cancelled.
+* Implemented ``__slots__``.
+
 1.4.0 (2024-01-20)
 ^^^^^^^^^^^^^^^^^^
 
