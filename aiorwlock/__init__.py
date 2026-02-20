@@ -93,7 +93,11 @@ class _RWLockCore:
             await self._yield_after_acquire(self._RL)
             return True
 
-        if not self._write_waiters and self._r_state >= 0 and self._w_state == 0:
+        if (
+            not self._write_waiters
+            and self._r_state >= 0
+            and self._w_state == 0
+        ):
             self._r_state += 1
             self._owning.append((me, self._RL))
             await self._yield_after_acquire(self._RL)
@@ -201,7 +205,9 @@ class _ContextManagerMixin:
     __slots__ = ()
 
     def __enter__(self) -> None:
-        raise RuntimeError('"await" should be used as context manager expression')
+        raise RuntimeError(
+            '"await" should be used as context manager expression'
+        )
 
     def __exit__(self, *args: Any) -> None:
         # This must exist because __enter__ exists, even though that
