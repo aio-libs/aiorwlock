@@ -4,17 +4,16 @@ FILES := aiorwlock tests examples
 
 
 flake:
-	poetry run flake8 $(FILES)
+	poetry run ruff check $(FILES)
 
 fmt:
-	poetry run isort ${FILES}
-	poetry run black -S -l 79 ${FILES}
+	poetry run ruff check --fix $(FILES)
+	poetry run ruff format $(FILES)
 
 lint: bandit pyroma
-	poetry run isort --check-only --diff ${FILES}
-	poetry run black -S -l 79 --check $(FILES)
+	poetry run ruff check $(FILES)
+	poetry run ruff format --check --diff $(FILES)
 	poetry run mypy --show-error-codes --disallow-untyped-calls --strict aiorwlock
-	poetry run flake8 $(FILES)
 
 test: flake
 	poetry run pytest -s

@@ -27,15 +27,12 @@ python = ">=3.11"
 
 [tool.poetry.dev-dependencies]
 bandit = "1.8.6"
-black = "25.11.0"
-flake8-bugbear = "24.12.12"
-flake8 = "7.3.0"
-isort = "6.1.0"
 mypy = "1.19.1"
 pyroma = "5.0.1"
 pytest-asyncio = "1.2.0"
 pytest-cov = "7.1.0"
 pytest = "8.4.2"
+ruff = "0.17.3"
 coverage = "^7.10.7"
 
 [build-system]
@@ -46,6 +43,16 @@ build-backend = "poetry.core.masonry.api"
 filterwarnings = ["error"]
 testpaths = ["tests"]
 asyncio_mode = "strict"
+
+[tool.ruff]
+line-length = 79
+target-version = "py311"
+
+[tool.ruff.format]
+quote-style = "preserve"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "I"]
 
 [tool.mypy]
 [tool.mypy-pytest]
