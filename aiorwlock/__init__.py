@@ -1,7 +1,7 @@
 import asyncio
 import threading
 from collections import deque
-from typing import Any, Deque, List, Optional, Tuple
+from typing import Any
 
 __all__ = ("RWLock", "__version__")
 
@@ -41,13 +41,13 @@ class _RWLockCore:
 
     def __init__(self, fast: bool):
         self._do_yield = not fast
-        self._read_waiters: Deque[asyncio.Future[None]] = deque()
-        self._write_waiters: Deque[asyncio.Future[None]] = deque()
+        self._read_waiters: deque[asyncio.Future[None]] = deque()
+        self._write_waiters: deque[asyncio.Future[None]] = deque()
         self._r_state: int = 0
         self._w_state: int = 0
         # tasks will be few, so a list is not inefficient
-        self._owning: List[Tuple[asyncio.Task[Any], int]] = []
-        self._loop: Optional[asyncio.AbstractEventLoop] = None
+        self._owning: list[tuple[asyncio.Task[Any], int]] = []
+        self._loop: asyncio.AbstractEventLoop | None = None
 
     def _get_loop(self) -> asyncio.AbstractEventLoop:
         """
@@ -220,7 +220,7 @@ class _ContextManagerMixin:
         # statement for locks.
         return None
 
-    async def __aexit__(self, *args: List[Any]) -> None:
+    async def __aexit__(self, *args: Any) -> None:
         self.release()
 
     async def acquire(self) -> None:
