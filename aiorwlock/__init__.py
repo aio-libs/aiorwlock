@@ -54,7 +54,7 @@ class _RWLockCore:
         From: https://github.com/python/cpython/blob/3.12/Lib/asyncio/mixins.py
         """
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
 
         if self._loop is None:
             with _global_lock:

@@ -52,7 +52,7 @@ target-version = "py311"
 quote-style = "preserve"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "B", "I"]
+select = ["E", "F", "W", "B", "I", "UP"]
 
 [tool.mypy]
 [tool.mypy-pytest]
