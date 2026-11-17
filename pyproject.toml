@@ -1,6 +1,6 @@
 [project]
 name = "aiorwlock"
-version = "1.5.1"
+version = "1.6.0"
 description = "Read write lock for asyncio."
 authors = [{ name = "Nikolay Novik", email = "nickolainovik@gmail.com" }]
 license = "Apache-2.0"
