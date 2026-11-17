@@ -26,14 +26,14 @@ classifiers = [
 python = ">=3.11"
 
 [tool.poetry.dev-dependencies]
-bandit = "1.8.6"
-mypy = "1.19.1"
+bandit = "1.9.4"
+mypy = "2.4.1"
 pyroma = "5.0.1"
-pytest-asyncio = "1.2.0"
+pytest-asyncio = "1.5.0"
 pytest-cov = "7.1.0"
-pytest = "8.4.2"
-ruff = "0.17.3"
-coverage = "^7.10.7"
+pytest = "9.2.0"
+ruff = "0.17.5"
+coverage = "^7.17.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -43,6 +43,7 @@ build-backend = "poetry.core.masonry.api"
 filterwarnings = ["error"]
 testpaths = ["tests"]
 asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
 line-length = 79
