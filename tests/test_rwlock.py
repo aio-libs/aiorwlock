@@ -14,7 +14,7 @@ class Bunch:
         If `wait_before_exit` is True, the tasks won't terminate until
         do_finish() is called.
         """
-        self._loop = asyncio.get_event_loop()
+        self._loop = asyncio.get_running_loop()
         self.f = f
         self.n = n
         self.started = []
