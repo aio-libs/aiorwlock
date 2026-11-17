@@ -285,7 +285,7 @@ async def test_readers_writers(fast_track):
     (
         r,
         w,
-    ) = zip(*nlocked)
+    ) = zip(*nlocked, strict=True)
 
     assert max(r) > 1
     assert max(w) == 1
