@@ -33,7 +33,7 @@ pyroma = "5.0.1"
 pytest-asyncio = "1.5.0"
 pytest-cov = "7.1.0"
 pytest = "9.2.0"
-ruff = "0.17.5"
+ruff = "0.17.6"
 coverage = "^7.17.3"
 
 [build-system]
